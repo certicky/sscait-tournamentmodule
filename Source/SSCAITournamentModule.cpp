@@ -414,10 +414,14 @@ void SSCAITournamentAI::moveCameraDrop() {
 }
 
 void SSCAITournamentAI::moveCamera(BWAPI::Position pos, int priority) {
+	//BWAPI::Position currentMovedPosition = pos - BWAPI::Position(320, 240);
 	BWAPI::Position currentMovedPosition = pos - BWAPI::Position(320, 240);
 
-	if (currentMovedPosition.getDistance(lastMovedPosition) > 6.0f * TILE_SIZE && currentMovedPosition.isValid()) {
+	if (currentMovedPosition.getDistance(lastMovedPosition) > 4.0f * TILE_SIZE && currentMovedPosition.isValid()) {
+		BWAPI::Broodwar->sendText("currentMovedPosition: (%i, %i)", currentMovedPosition.x(), currentMovedPosition.y());
 		BWAPI::Broodwar->setScreenPosition(currentMovedPosition);
+		BWAPI::Position actualPosition = BWAPI::Broodwar->getScreenPosition();
+		BWAPI::Broodwar->sendText("actualScreenPosition: (%i, %i)", actualPosition.x(), actualPosition.y());
 		lastMovedPosition = currentMovedPosition;
 		lastMoved = BWAPI::Broodwar->getFrameCount();
 		lastMovedPriority = priority;
