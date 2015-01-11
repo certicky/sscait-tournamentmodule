@@ -399,6 +399,8 @@ void SSCAITournamentAI::moveCameraIsAttacking()
 }
 
 void SSCAITournamentAI::moveCameraScoutWorker() {
+	// TODO: Do this with low priority even if not close to !own start location
+
 	for each (BWAPI::Unit* unit in BWAPI::Broodwar->self()->getUnits()) {
 		if (unit->getType().isWorker() && isNearStartLocation(unit)) {
 			moveCamera(unit->getPosition(), 2);
