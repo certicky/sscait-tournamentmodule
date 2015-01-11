@@ -456,14 +456,14 @@ void SSCAITournamentAI::moveCameraArmy() {
 	int mostUnitsNearby = 0;
 
 	for each (BWAPI::Unit* unit1 in BWAPI::Broodwar->getAllUnits()) {
-		if (unit1->getType().isWorker()) {
+		if (unit1->getType().isWorker() || unit1->getType().isBuilding()) {
 			continue;
 		}
 		BWAPI::Position uPos = unit1->getPosition();
 
 		int nrUnitsNearby = 0;
 		for each (BWAPI::Unit* unit2 in BWAPI::Broodwar->getUnitsInRadius(uPos, radius)) {
-			if (unit2->getType().isWorker()) {
+			if (unit2->getType().isWorker() || unit2->getType().isBuilding()) {
 				continue;
 			}
 			nrUnitsNearby++;
@@ -475,7 +475,7 @@ void SSCAITournamentAI::moveCameraArmy() {
 		}
 	}
 
-	if (mostUnitsNearby > 3) {
+	if (mostUnitsNearby > 2) {
 		moveCamera(bestPos, prio);
 	}
 }
