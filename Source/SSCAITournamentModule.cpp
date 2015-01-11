@@ -368,7 +368,8 @@ bool SSCAITournamentAI::isNearStartLocation(BWAPI::Unit* unit) {
 
 void SSCAITournamentAI::moveCameraIsUnderAttack()
 {
-	if (BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTime && (lastMovedPriority >= 1 || BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTimeMin))
+	int prio = 3;
+	if (BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTime && (lastMovedPriority >= prio || BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTimeMin))
 	{
 		return;
 	}
@@ -377,14 +378,15 @@ void SSCAITournamentAI::moveCameraIsUnderAttack()
 	{
 		if (unit->isUnderAttack())
 		{
-			moveCamera(unit->getPosition(), 1);
+			moveCamera(unit->getPosition(), prio);
 		}
 	}
 }
 
 void SSCAITournamentAI::moveCameraIsAttacking()
 {
-	if (BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTime && (lastMovedPriority >= 1 || BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTimeMin))
+	int prio = 3;
+	if (BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTime && (lastMovedPriority >= prio || BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTimeMin))
 	{
 		return;
 	}
@@ -393,32 +395,74 @@ void SSCAITournamentAI::moveCameraIsAttacking()
 	{
 		if (unit->isAttacking())
 		{
-			moveCamera(unit->getPosition(), 1);
+			moveCamera(unit->getPosition(), prio);
 		}
 	}
 }
 
 void SSCAITournamentAI::moveCameraScoutWorker() {
+	int prio = 2;
+	if (BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTime && (lastMovedPriority >= prio || BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTimeMin))
+	{
+		return;
+	}
 	// TODO: Do this with low priority even if not close to !own start location
 
 	for each (BWAPI::Unit* unit in BWAPI::Broodwar->self()->getUnits()) {
 		if (unit->getType().isWorker() && isNearStartLocation(unit)) {
-			moveCamera(unit->getPosition(), 2);
+			moveCamera(unit->getPosition(), prio);
 		}
 	}
 }
 
 void SSCAITournamentAI::moveCameraDrop() {
+	int prio = 2;
+	if (BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTime && (lastMovedPriority >= prio || BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTimeMin))
+	{
+		return;
+	}
 	for each (BWAPI::Unit* unit in BWAPI::Broodwar->self()->getUnits()) {
 		if ((unit->getType() == UnitTypes::Zerg_Overlord || unit->getType() == UnitTypes::Terran_Dropship || unit->getType() == UnitTypes::Protoss_Shuttle) && isNearStartLocation(unit)) {
-			moveCamera(unit->getPosition(), 2);
+			moveCamera(unit->getPosition(), prio);
 		}
 	}
 }
 
 void SSCAITournamentAI::moveCameraArmy() {
+	int prio = 1;
+	if (BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTime && (lastMovedPriority >= prio || BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTimeMin))
+	{
+		return;
+	}
 	// Double loop, check if >3 (?) army units are close to each other
+	int radius = 50;
 
+	BWAPI::Position bestPos;
+	int mostUnitsNearby = 0;
+
+	for each (BWAPI::Unit* unit1 in BWAPI::Broodwar->getAllUnits()) {
+		if (unit1->getType().isWorker()) {
+			continue;
+		}
+		BWAPI::Position uPos = unit1->getPosition();
+
+		int nrUnitsNearby = 0;
+		for each (BWAPI::Unit* unit2 in BWAPI::Broodwar->getUnitsInRadius(uPos, radius)) {
+			if (unit2->getType().isWorker()) {
+				continue;
+			}
+			nrUnitsNearby++;
+		}
+
+		if (nrUnitsNearby > mostUnitsNearby) {
+			mostUnitsNearby = nrUnitsNearby;
+			bestPos = uPos;
+		}
+	}
+
+	if (mostUnitsNearby > 3) {
+		moveCamera(bestPos, prio);
+	}
 	/*for each (BWAPI::Unit* unit in BWAPI::Broodwar->self()->getUnits()) {
 		if ((unit->getType() == UnitTypes::Zerg_Overlord || unit->getType() == UnitTypes::Terran_Dropship || unit->getType() == UnitTypes::Protoss_Shuttle) && isNearStartLocation(unit)) {
 			//moveCamera(unit->getPosition(), 2);
@@ -427,9 +471,9 @@ void SSCAITournamentAI::moveCameraArmy() {
 }
 
 void SSCAITournamentAI::moveCamera(BWAPI::Position pos, int priority) {
-	BWAPI::Position currentMovedPosition = pos - BWAPI::Position(320, 240);
+	BWAPI::Position currentMovedPosition = pos - BWAPI::Position(320, 200);
 
-	if (currentMovedPosition.getDistance(lastMovedPosition) > 3.0f * TILE_SIZE && currentMovedPosition.isValid()) {
+	if (currentMovedPosition.getDistance(lastMovedPosition) > 4.0f * TILE_SIZE && currentMovedPosition.isValid()) {
 		BWAPI::Broodwar->setScreenPosition(currentMovedPosition);
 		lastMovedPosition = currentMovedPosition;
 		lastMoved = BWAPI::Broodwar->getFrameCount();
