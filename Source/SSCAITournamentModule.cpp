@@ -352,18 +352,24 @@ bool SSCAITournamentAI::isNearEnemyBuilding(BWAPI::Unit* unit, std::set<BWAPI::U
 	return false;
 }
 
-bool SSCAITournamentAI::isNearStartLocation(BWAPI::Unit* unit) {
+bool SSCAITournamentAI::isNearStartLocation(BWAPI::Position pos) {
+	int distance = 1000;
 	std::set<BWAPI::TilePosition> startLocations = Broodwar->getStartLocations();
 
 	for (std::set<BWAPI::TilePosition>::iterator it = startLocations.begin(); it != startLocations.end(); it++) {
 		Position startLocation = BWAPI::Position(*it);
-
-		if (startLocation.getDistance(myStartLocation) > 10 * TILE_SIZE && startLocation.getDistance(unit->getPosition()) <= 1000) {
+		
+		if (!isNearOwnStartLocation(startLocation) && startLocation.getDistance(pos) <= distance) {
 			return true;
 		}
 	}
 
 	return false;
+}
+
+bool SSCAITournamentAI::isNearOwnStartLocation(BWAPI::Position pos) {
+	int distance = 10 * TILE_SIZE;
+	return (myStartLocation.getDistance(pos) <= distance);
 }
 
 void SSCAITournamentAI::moveCameraIsUnderAttack()
@@ -401,16 +407,22 @@ void SSCAITournamentAI::moveCameraIsAttacking()
 }
 
 void SSCAITournamentAI::moveCameraScoutWorker() {
-	int prio = 2;
-	if (BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTime && (lastMovedPriority >= prio || BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTimeMin))
+	int highPrio = 2;
+	int lowPrio = 0;
+	if (BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTime && (lastMovedPriority >= highPrio || BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTimeMin))
 	{
 		return;
 	}
 	// TODO: Do this with low priority even if not close to !own start location
 
 	for each (BWAPI::Unit* unit in BWAPI::Broodwar->self()->getUnits()) {
-		if (unit->getType().isWorker() && isNearStartLocation(unit)) {
-			moveCamera(unit->getPosition(), prio);
+		if (!unit->getType().isWorker()) {
+			continue;
+		}
+		if (isNearStartLocation(unit->getPosition())) {
+			moveCamera(unit->getPosition(), highPrio);
+		} else if (!isNearOwnStartLocation(unit->getPosition())) {
+			moveCamera(unit->getPosition(), lowPrio);
 		}
 	}
 }
@@ -422,7 +434,7 @@ void SSCAITournamentAI::moveCameraDrop() {
 		return;
 	}
 	for each (BWAPI::Unit* unit in BWAPI::Broodwar->self()->getUnits()) {
-		if ((unit->getType() == UnitTypes::Zerg_Overlord || unit->getType() == UnitTypes::Terran_Dropship || unit->getType() == UnitTypes::Protoss_Shuttle) && isNearStartLocation(unit)) {
+		if ((unit->getType() == UnitTypes::Zerg_Overlord || unit->getType() == UnitTypes::Terran_Dropship || unit->getType() == UnitTypes::Protoss_Shuttle) && isNearStartLocation(unit->getPosition())) {
 			moveCamera(unit->getPosition(), prio);
 		}
 	}
@@ -543,13 +555,14 @@ void SSCAITournamentAI::onUnitMorph(BWAPI::Unit* unit)
 
 void SSCAITournamentAI::onUnitComplete(BWAPI::Unit *unit)
 {
+	int prio = 1;
 	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
 
 	if (BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTime) {
 		return;
 	}
 	else if (unit->getPlayer() == Broodwar->self()) {
-		moveCamera(unit->getPosition(), 0);
+		moveCamera(unit->getPosition(), prio);
 	}
 }
 
