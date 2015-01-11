@@ -50,6 +50,7 @@ public:
   virtual void moveCamera(BWAPI::Position pos, int priority);
   virtual void moveCameraScoutWorker();
   virtual void moveCameraDrop();
+  virtual void moveCameraArmy();
   virtual void drawUnitInformation(int x, int y);
   virtual void drawTournamentModuleSettings(int x, int y);
   virtual void parseConfigFile(const std::string & filename);

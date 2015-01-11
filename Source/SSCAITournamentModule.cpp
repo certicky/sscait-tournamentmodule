@@ -171,6 +171,7 @@ void SSCAITournamentAI::onFrame()
 	if (Broodwar->getFrameCount() <= watchScoutWorkerUntil) {
 		moveCameraScoutWorker();
 	}
+	moveCameraArmy();
 	moveCameraDrop();
 
 	if (Broodwar->getFrameCount() % 360 == 0)
@@ -413,10 +414,20 @@ void SSCAITournamentAI::moveCameraDrop() {
 	}
 }
 
+void SSCAITournamentAI::moveCameraArmy() {
+	// Double loop, check if >3 (?) army units are close to each other
+
+	/*for each (BWAPI::Unit* unit in BWAPI::Broodwar->self()->getUnits()) {
+		if ((unit->getType() == UnitTypes::Zerg_Overlord || unit->getType() == UnitTypes::Terran_Dropship || unit->getType() == UnitTypes::Protoss_Shuttle) && isNearStartLocation(unit)) {
+			//moveCamera(unit->getPosition(), 2);
+		}
+	}*/
+}
+
 void SSCAITournamentAI::moveCamera(BWAPI::Position pos, int priority) {
 	BWAPI::Position currentMovedPosition = pos - BWAPI::Position(320, 240);
 
-	if (currentMovedPosition.getDistance(lastMovedPosition) > 6.0f * TILE_SIZE && currentMovedPosition.isValid()) {
+	if (currentMovedPosition.getDistance(lastMovedPosition) > 3.0f * TILE_SIZE && currentMovedPosition.isValid()) {
 		BWAPI::Broodwar->setScreenPosition(currentMovedPosition);
 		lastMovedPosition = currentMovedPosition;
 		lastMoved = BWAPI::Broodwar->getFrameCount();
