@@ -449,7 +449,7 @@ void SSCAITournamentAI::moveCameraArmy() {
 	{
 		return;
 	}
-	// Double loop, check if >3 (?) army units are close to each other
+	// Double loop, check if army units are close to each other
 	int radius = 50;
 
 	BWAPI::Position bestPos;
@@ -475,7 +475,7 @@ void SSCAITournamentAI::moveCameraArmy() {
 		}
 	}
 
-	if (mostUnitsNearby > 2) {
+	if (mostUnitsNearby > 1) {
 		moveCamera(bestPos, prio);
 	}
 }
