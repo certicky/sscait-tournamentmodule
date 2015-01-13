@@ -46,6 +46,7 @@ public:
   virtual bool isNearEnemyBuilding(BWAPI::Unit* unit, std::set<BWAPI::Unit*> &enemyUnits);
   virtual bool isNearStartLocation(BWAPI::Position pos);
   virtual bool isNearOwnStartLocation(BWAPI::Position pos);
+  virtual bool isArmyUnit(BWAPI::Unit* unit);
   virtual bool shouldMoveCamera(int priority);
   virtual void moveCameraIsAttacking();
   virtual void moveCameraIsUnderAttack();

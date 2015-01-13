@@ -372,6 +372,10 @@ bool SSCAITournamentAI::isNearOwnStartLocation(BWAPI::Position pos) {
 	return (myStartLocation.getDistance(pos) <= distance);
 }
 
+bool SSCAITournamentAI::isArmyUnit(BWAPI::Unit* unit) {
+	return !(unit->getType().isWorker() || unit->getType().isBuilding() || unit->getType() == BWAPI::UnitTypes::Terran_Vulture_Spider_Mine);
+}
+
 bool SSCAITournamentAI::shouldMoveCamera(int priority) {
 	return !(BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTime && (lastMovedPriority >= priority || BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTimeMin));
 }
@@ -456,14 +460,14 @@ void SSCAITournamentAI::moveCameraArmy() {
 	int mostUnitsNearby = 0;
 
 	for each (BWAPI::Unit* unit1 in BWAPI::Broodwar->getAllUnits()) {
-		if (unit1->getType().isWorker() || unit1->getType().isBuilding()) {
+		if (!isArmyUnit(unit1)) {
 			continue;
 		}
 		BWAPI::Position uPos = unit1->getPosition();
 
 		int nrUnitsNearby = 0;
 		for each (BWAPI::Unit* unit2 in BWAPI::Broodwar->getUnitsInRadius(uPos, radius)) {
-			if (unit2->getType().isWorker() || unit2->getType().isBuilding()) {
+			if (!isArmyUnit(unit2)) {
 				continue;
 			}
 			nrUnitsNearby++;
