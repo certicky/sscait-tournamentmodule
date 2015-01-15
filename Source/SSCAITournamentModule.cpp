@@ -109,7 +109,7 @@ int watchScoutWorkerUntil = 7000;
 int lastMoved = 0;
 int lastMovedPriority = 0;
 BWAPI::Position lastMovedPosition = BWAPI::Position(0, 0);
-int localSpeed = 10;
+int localSpeed = 10; // this is overwritten when setting zero speed
 int frameSkip = 0;
 int gameTimeLimit = 85714;
 int zeroSpeedTime = 85714;
@@ -225,6 +225,7 @@ void SSCAITournamentAI::onFrame()
 
 	if (Broodwar->getFrameCount() >= zeroSpeedTime && Broodwar->getFrameCount() <= zeroSpeedTime+32) {
 		Broodwar->setLocalSpeed(0);
+		localSpeed = 0;
 	}
 }
 
