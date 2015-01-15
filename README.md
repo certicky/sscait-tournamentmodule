@@ -1,0 +1,1 @@
+Read the file 'local_files_example/README.txt' for instructions of post-compile copying of the .dll file.
