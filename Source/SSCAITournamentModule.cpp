@@ -373,7 +373,11 @@ bool SSCAITournamentAI::isNearOwnStartLocation(BWAPI::Position pos) {
 }
 
 bool SSCAITournamentAI::isArmyUnit(BWAPI::Unit* unit) {
-	return !(unit->getType().isWorker() || unit->getType().isBuilding() || unit->getType() == BWAPI::UnitTypes::Terran_Vulture_Spider_Mine);
+	return !(unit->getType().isWorker()
+		|| unit->getType().isBuilding()
+		|| unit->getType() == BWAPI::UnitTypes::Terran_Vulture_Spider_Mine
+		|| unit->getType() == BWAPI::UnitTypes::Zerg_Overlord
+		|| unit->getType() == BWAPI::UnitTypes::Zerg_Larva);
 }
 
 bool SSCAITournamentAI::shouldMoveCamera(int priority) {
@@ -441,7 +445,8 @@ void SSCAITournamentAI::moveCameraDrop() {
 		return;
 	}
 	for each (BWAPI::Unit* unit in BWAPI::Broodwar->self()->getUnits()) {
-		if ((unit->getType() == UnitTypes::Zerg_Overlord || unit->getType() == UnitTypes::Terran_Dropship || unit->getType() == UnitTypes::Protoss_Shuttle) && isNearStartLocation(unit->getPosition())) {
+		if ((unit->getType() == UnitTypes::Zerg_Overlord || unit->getType() == UnitTypes::Terran_Dropship || unit->getType() == UnitTypes::Protoss_Shuttle)
+			&& isNearStartLocation(unit->getPosition()) && unit->getLoadedUnits().size() > 0) {
 			moveCamera(unit->getPosition(), prio);
 		}
 	}
