@@ -47,11 +47,10 @@ public:
 	void update(std::vector<int> & times)
 	{
 		frameCount		= BWAPI::Broodwar->getFrameCount();
-		selfScore		= BWAPI::Broodwar->self()->getKillScore() 
-						+ BWAPI::Broodwar->self()->getBuildingScore() 
-						+ BWAPI::Broodwar->self()->getRazingScore() 
-						+ BWAPI::Broodwar->self()->gatheredMinerals()
-						+ BWAPI::Broodwar->self()->gatheredGas();
+		selfScore		= BWAPI::Broodwar->self()->getKillScore() + BWAPI::Broodwar->self()->getRazingScore();
+						//+ BWAPI::Broodwar->self()->getBuildingScore() 
+						//+ BWAPI::Broodwar->self()->gatheredMinerals()
+						//+ BWAPI::Broodwar->self()->gatheredGas();
 
 		timeOutExceeded = times;
 
