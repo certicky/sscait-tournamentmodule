@@ -10,6 +10,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <sstream>
+#include "CameraModule.h"
 
 #define MINIMUM_COMMAND_OPTIMIZATION 1
 
@@ -22,6 +23,7 @@ class SSCAITournamentModule : public BWAPI::TournamentModule
 class SSCAITournamentAI : public BWAPI::AIModule
 {
 private:
+  CameraModule camera;
   BWAPI::Position myStartLocation;
 
 public:
@@ -43,17 +45,17 @@ public:
   virtual void onSaveGame(std::string gameName);
   virtual void onUnitComplete(BWAPI::Unit *unit);
   virtual void onPlayerDropped(BWAPI::Player* player);
-  virtual bool isNearEnemyBuilding(BWAPI::Unit* unit, std::set<BWAPI::Unit*> &enemyUnits);
-  virtual bool isNearStartLocation(BWAPI::Position pos);
-  virtual bool isNearOwnStartLocation(BWAPI::Position pos);
-  virtual bool isArmyUnit(BWAPI::Unit* unit);
-  virtual bool shouldMoveCamera(int priority);
-  virtual void moveCameraIsAttacking();
-  virtual void moveCameraIsUnderAttack();
-  virtual void moveCamera(BWAPI::Position pos, int priority);
-  virtual void moveCameraScoutWorker();
-  virtual void moveCameraDrop();
-  virtual void moveCameraArmy();
+  //virtual bool isNearEnemyBuilding(BWAPI::Unit* unit, std::set<BWAPI::Unit*> &enemyUnits);
+  //virtual bool isNearStartLocation(BWAPI::Position pos);
+  //virtual bool isNearOwnStartLocation(BWAPI::Position pos);
+  //virtual bool isArmyUnit(BWAPI::Unit* unit);
+  //virtual bool shouldMoveCamera(int priority);
+  //virtual void moveCameraIsAttacking();
+  //virtual void moveCameraIsUnderAttack();
+  //virtual void moveCamera(BWAPI::Position pos, int priority);
+  //virtual void moveCameraScoutWorker();
+  //virtual void moveCameraDrop();
+  //virtual void moveCameraArmy();
   virtual void drawUnitInformation(int x, int y);
   virtual void drawTournamentModuleSettings(int x, int y);
   virtual void parseConfigFile(const std::string & filename);

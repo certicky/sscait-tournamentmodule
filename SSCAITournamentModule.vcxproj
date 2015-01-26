@@ -64,10 +64,12 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\CameraModule.cpp" />
     <ClCompile Include="Source\Dll.cpp" />
     <ClCompile Include="Source\SSCAITournamentModule.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\CameraModule.h" />
     <ClInclude Include="Source\SSCAITournamentModule.h" />
     <ClInclude Include="Source\Timer.h" />
   </ItemGroup>

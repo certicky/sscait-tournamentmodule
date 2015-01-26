@@ -21,12 +21,18 @@
     <ClCompile Include="Source\SSCAITournamentModule.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\CameraModule.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\SSCAITournamentModule.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Timer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\CameraModule.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
