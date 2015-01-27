@@ -105,6 +105,7 @@ int localSpeed = 10; // this is overwritten when setting zero speed
 int frameSkip = 0;
 int gameTimeLimit = 85714;
 int zeroSpeedTime = 85714;
+int noKillsSecondsLimit = 400;
 
 bool drawBotNames = true;
 bool drawUnitInfo = false;
@@ -254,6 +255,10 @@ void SSCAITournamentAI::drawTournamentModuleSettings(int x, int y)
 
 		BWAPI::Broodwar->drawTextScreen(drawX, drawY, "\x04 BWAPI frame skip: ");
 		BWAPI::Broodwar->drawTextScreen(drawX + width, drawY, " %d", frameSkip);
+		drawY += 10;
+
+		BWAPI::Broodwar->drawTextScreen(drawX, drawY, "\x04 No kills time limit: ");
+		BWAPI::Broodwar->drawTextScreen(drawX + width, drawY, " %d", noKillsSecondsLimit);
 		drawY += 10;
 
 		drawX = 420;
@@ -533,6 +538,10 @@ void SSCAITournamentAI::parseConfigFile(const std::string & filename)
 		else if (strcmp(option.c_str(), "ZeroSpeedTime") == 0)
 		{
 			iss >> zeroSpeedTime;
+		}
+		else if (strcmp(option.c_str(), "NoKillsRealSecondsLimit") == 0)
+		{
+			iss >> noKillsSecondsLimit;
 		}
 		else if (strcmp(option.c_str(), "DrawUnitInfo") == 0)
         {
