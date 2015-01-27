@@ -105,7 +105,7 @@ int localSpeed = 10; // this is overwritten when setting zero speed
 int frameSkip = 0;
 int gameTimeLimit = 85714;
 int zeroSpeedTime = 85714;
-int noKillsSecondsLimit = 400;
+int noKillsSecondsLimit = 300;
 
 bool drawBotNames = true;
 bool drawUnitInfo = false;
@@ -114,6 +114,9 @@ bool drawTournamentInfo = true;
 char buffer[MAX_PATH];
 
 std::vector<int> frameTimes(100000,0);
+
+Timer killLimitTimer;
+int timeOfLastKill = 0;
 
 void SSCAITournamentAI::onStart()
 {
@@ -144,6 +147,7 @@ void SSCAITournamentAI::onStart()
 	Broodwar->printf("Start position: %d %d", myStartLocation.x(), myStartLocation.y());
 
 	camera.onStart(myStartLocation);
+	killLimitTimer.start();
 }
 
 
@@ -169,6 +173,12 @@ void SSCAITournamentAI::onFrame()
 		TournamentModuleState state = TournamentModuleState();
 		state.update(timerLimitsExceeded);
 		state.write("gameState.txt");
+	}
+
+	if (killLimitTimer.getElapsedTimeInSec() - timeOfLastKill > noKillsSecondsLimit)
+	{
+		Broodwar->sendText("No unit killed for %d seconds, exiting", noKillsSecondsLimit);
+		Broodwar->leaveGame();
 	}
 
 	if ((gameTimeLimit > 0) && (Broodwar->getFrameCount() > gameTimeLimit))
@@ -257,8 +267,8 @@ void SSCAITournamentAI::drawTournamentModuleSettings(int x, int y)
 		BWAPI::Broodwar->drawTextScreen(drawX + width, drawY, " %d", frameSkip);
 		drawY += 10;
 
-		BWAPI::Broodwar->drawTextScreen(drawX, drawY, "\x04 No kills time limit: ");
-		BWAPI::Broodwar->drawTextScreen(drawX + width, drawY, " %d", noKillsSecondsLimit);
+		BWAPI::Broodwar->drawTextScreen(drawX, drawY, "\x04 No-kills time limit: ");
+		BWAPI::Broodwar->drawTextScreen(drawX + width, drawY, " %i", (noKillsSecondsLimit - (int)(killLimitTimer.getElapsedTimeInSec() - timeOfLastKill)));
 		drawY += 10;
 
 		drawX = 420;
