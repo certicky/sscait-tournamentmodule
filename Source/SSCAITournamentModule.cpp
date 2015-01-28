@@ -401,7 +401,10 @@ void SSCAITournamentAI::onUnitCreate(BWAPI::Unit* unit)
 void SSCAITournamentAI::onUnitDestroy(BWAPI::Unit* unit)
 {
 	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
-	timeOfLastKill = killLimitTimer.getElapsedTimeInSec();
+	if (!unit->isHallucination())
+	{
+		timeOfLastKill = killLimitTimer.getElapsedTimeInSec();
+	}
 }
 
 void SSCAITournamentAI::onUnitMorph(BWAPI::Unit* unit)
