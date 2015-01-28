@@ -268,7 +268,8 @@ void SSCAITournamentAI::drawTournamentModuleSettings(int x, int y)
 		drawY += 10;
 
 		BWAPI::Broodwar->drawTextScreen(drawX, drawY, "\x04 No-kills time limit: ");
-		BWAPI::Broodwar->drawTextScreen(drawX + width, drawY, " %i", (noKillsSecondsLimit - (int)(killLimitTimer.getElapsedTimeInSec() - timeOfLastKill)));
+		int seconds = (noKillsSecondsLimit - (int)(killLimitTimer.getElapsedTimeInSec() - timeOfLastKill));
+		BWAPI::Broodwar->drawTextScreen(drawX + width, drawY, " %i:%s%i", seconds/60, (seconds % 60 < 10) ? "0" : "", seconds % 60);
 		drawY += 10;
 
 		drawX = 420;
