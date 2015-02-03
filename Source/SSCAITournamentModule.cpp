@@ -101,11 +101,13 @@ std::vector<int> timerLimits;
 std::vector<int> timerLimitsBound;
 std::vector<int> timerLimitsExceeded;
 
-int localSpeed = 10; // this is overwritten when setting zero speed
+int targetLocalSpeed = 10; // the local speed used during gameplay (excluding initial and final max speeds)
+int localSpeed = targetLocalSpeed; // actual current game speed, gets overwritten when changing speed
 int frameSkip = 0;
 int gameTimeLimit = 85714;
 int zeroSpeedTime = 85714;
 int noKillsSecondsLimit = 300;
+int gameStartMaxSpeedTime = 90; // nr of in-game seconds with max speed in start of the game
 
 bool drawBotNames = true;
 bool drawUnitInfo = false;
@@ -140,7 +142,8 @@ void SSCAITournamentAI::onStart()
 	camera = CameraModule();
 	parseConfigFile("bwapi-data\\tm_settings.ini");
 	
-	Broodwar->setLocalSpeed(localSpeed);
+	Broodwar->setLocalSpeed(0); // starts game with max speed, switches to normal speed after some time
+	localSpeed = 0;
 	Broodwar->setFrameSkip(frameSkip);
 
 	myStartLocation = Position(Broodwar->self()->getStartLocation().x()*TILE_SIZE, Broodwar->self()->getStartLocation().y()*TILE_SIZE);
@@ -221,6 +224,12 @@ void SSCAITournamentAI::onFrame()
 	if (drawUnitInfo)
 	{
 		drawUnitInformation(440,6);
+	}
+
+	if (localSpeed != targetLocalSpeed && Broodwar->getFrameCount() < zeroSpeedTime && Broodwar->elapsedTime() >= gameStartMaxSpeedTime)
+	{
+		Broodwar->setLocalSpeed(targetLocalSpeed);
+		localSpeed = targetLocalSpeed;
 	}
 
 	if (Broodwar->getFrameCount() >= zeroSpeedTime && Broodwar->getFrameCount() <= zeroSpeedTime+32) {
@@ -516,7 +525,7 @@ void SSCAITournamentAI::parseConfigFile(const std::string & filename)
 
         if (strcmp(option.c_str(), "LocalSpeed") == 0)
         {
-			iss >> localSpeed;
+			iss >> targetLocalSpeed;
         }
         else if (strcmp(option.c_str(), "FrameSkip") == 0)
         {
