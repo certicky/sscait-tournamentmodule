@@ -46,6 +46,7 @@ public:
 
 	void update(std::vector<int> & times)
 	{
+		// TODO if no-kills limit, set framecount to frame limit
 		frameCount		= BWAPI::Broodwar->getFrameCount();
 		selfScore		= BWAPI::Broodwar->self()->getKillScore() + BWAPI::Broodwar->self()->getRazingScore();
 						//+ BWAPI::Broodwar->self()->getBuildingScore() 
@@ -64,6 +65,7 @@ public:
 
 	bool write(std::string filename)
 	{
+		// TODO change current directory the correct one
 		gameTimeUp = Broodwar->getFrameCount() > 85714;
 
 		std::ofstream outfile(filename.c_str(), std::ios::out);
@@ -94,6 +96,7 @@ public:
 		}
 
 		outfile.close();
+		// TODO change current directory back to the previous, to not make life too hard for bot developers
 	}	
 };
 
