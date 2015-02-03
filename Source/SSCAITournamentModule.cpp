@@ -63,9 +63,13 @@ public:
 		gameOver = 1;
 	}
 
-	bool write(std::string filename)
+	bool write(std::string filename, char directory)
 	{
-		// TODO change current directory the correct one
+		char tmpDir[MAX_PATH];
+		GetModuleFileName(NULL, tmpDir, MAX_PATH);
+		// change current directory the correct one
+		SetCurrentDirectory(&directory);
+		
 		gameTimeUp = Broodwar->getFrameCount() > 85714;
 
 		std::ofstream outfile(filename.c_str(), std::ios::out);
@@ -96,7 +100,9 @@ public:
 		}
 
 		outfile.close();
-		// TODO change current directory back to the previous, to not make life too hard for bot developers
+
+		// change current directory back to the previous, to not make life too hard for bot developers
+		SetCurrentDirectory(tmpDir);
 	}	
 };
 
@@ -123,7 +129,6 @@ int timeOfLastKill = 0;
 
 void SSCAITournamentAI::onStart()
 {
-	
 	GetModuleFileName(NULL, buffer, MAX_PATH);
 	BWAPI::Broodwar->printf("Path is %s", buffer);
 
@@ -159,7 +164,7 @@ void SSCAITournamentAI::onEnd(bool isWinner)
 	TournamentModuleState state = TournamentModuleState();
 	state.ended();
 	state.update(timerLimitsExceeded);
-	state.write("gameState.txt");
+	state.write("gameState.txt", *buffer);
 }
 
 void SSCAITournamentAI::onFrame()
@@ -175,7 +180,7 @@ void SSCAITournamentAI::onFrame()
 	{
 		TournamentModuleState state = TournamentModuleState();
 		state.update(timerLimitsExceeded);
-		state.write("gameState.txt");
+		state.write("gameState.txt", *buffer);
 	}
 
 	if (killLimitTimer.getElapsedTimeInSec() - timeOfLastKill > noKillsSecondsLimit)
