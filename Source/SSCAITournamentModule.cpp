@@ -567,6 +567,10 @@ void SSCAITournamentAI::parseConfigFile(const std::string & filename)
 		{
 			iss >> noKillsSecondsLimit;
 		}
+		else if (strcmp(option.c_str(), "InitMaxSpeedTime") == 0)
+		{
+			iss >> gameStartMaxSpeedTime;
+		}
 		else if (strcmp(option.c_str(), "DrawUnitInfo") == 0)
         {
             std::string val;
