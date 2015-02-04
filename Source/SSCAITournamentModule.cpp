@@ -107,7 +107,7 @@ int frameSkip = 0;
 int gameTimeLimit = 85714;
 int zeroSpeedTime = 85714;
 int noKillsSecondsLimit = 300;
-int gameStartMaxSpeedTime = 90; // nr of in-game seconds with max speed in start of the game
+int gameStartMaxSpeedTime = 90*16; // nr of frames with max speed in start of the game (16 frames/second)
 
 bool drawBotNames = true;
 bool drawUnitInfo = false;
@@ -226,7 +226,7 @@ void SSCAITournamentAI::onFrame()
 		drawUnitInformation(440,6);
 	}
 
-	if (localSpeed != targetLocalSpeed && Broodwar->getFrameCount() < zeroSpeedTime && Broodwar->elapsedTime() >= gameStartMaxSpeedTime)
+	if (localSpeed != targetLocalSpeed && Broodwar->getFrameCount() < zeroSpeedTime && Broodwar->getFrameCount() >= gameStartMaxSpeedTime)
 	{
 		Broodwar->setLocalSpeed(targetLocalSpeed);
 		localSpeed = targetLocalSpeed;
