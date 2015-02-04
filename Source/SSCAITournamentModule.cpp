@@ -414,6 +414,12 @@ void SSCAITournamentAI::onUnitDestroy(BWAPI::Unit* unit)
 	{
 		timeOfLastKill = killLimitTimer.getElapsedTimeInSec();
 	}
+	
+	if (localSpeed != targetLocalSpeed && Broodwar->getFrameCount() < zeroSpeedTime)
+	{
+		Broodwar->setLocalSpeed(targetLocalSpeed);
+		localSpeed = targetLocalSpeed;
+	}
 }
 
 void SSCAITournamentAI::onUnitMorph(BWAPI::Unit* unit)
