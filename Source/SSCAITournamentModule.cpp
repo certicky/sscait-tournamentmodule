@@ -46,6 +46,7 @@ public:
 
 	void update(std::vector<int> & times)
 	{
+		// TODO if no-kills limit, set framecount to frame limit
 		frameCount		= BWAPI::Broodwar->getFrameCount();
 		selfScore		= BWAPI::Broodwar->self()->getKillScore() + BWAPI::Broodwar->self()->getRazingScore();
 						//+ BWAPI::Broodwar->self()->getBuildingScore() 
@@ -61,9 +62,14 @@ public:
 	{
 		gameOver = 1;
 	}
-
-	bool write(std::string filename)
+	
+	bool write(std::string filename, std::string directory)
 	{
+		char tmpDir[MAX_PATH];
+		GetCurrentDirectory(MAX_PATH, tmpDir);
+		// change current directory the correct one
+		SetCurrentDirectory(directory.c_str());
+		
 		gameTimeUp = Broodwar->getFrameCount() > 85714;
 
 		std::ofstream outfile(filename.c_str(), std::ios::out);
@@ -94,6 +100,9 @@ public:
 		}
 
 		outfile.close();
+
+		// change current directory back to the previous, to not make life too hard for bot developers
+		SetCurrentDirectory(tmpDir);
 	}	
 };
 
@@ -114,6 +123,7 @@ bool drawUnitInfo = false;
 bool drawTournamentInfo = true;
 
 char buffer[MAX_PATH];
+std::string folder;
 
 std::vector<int> frameTimes(100000,0);
 
@@ -122,9 +132,10 @@ int timeOfLastKill = 0;
 
 void SSCAITournamentAI::onStart()
 {
-	
 	GetModuleFileName(NULL, buffer, MAX_PATH);
 	BWAPI::Broodwar->printf("Path is %s", buffer);
+	std::string path(buffer);
+	folder = path.substr(0, path.find_last_of("/\\")); // removes \\StarCraft.exe
 
 	// Set the command optimization level (reduces high APM, size of bloated replays, etc)
 	Broodwar->setCommandOptimizationLevel(MINIMUM_COMMAND_OPTIMIZATION);
@@ -159,7 +170,7 @@ void SSCAITournamentAI::onEnd(bool isWinner)
 	TournamentModuleState state = TournamentModuleState();
 	state.ended();
 	state.update(timerLimitsExceeded);
-	state.write("gameState.txt");
+	state.write("gameState.txt", folder);
 }
 
 void SSCAITournamentAI::onFrame()
@@ -175,7 +186,7 @@ void SSCAITournamentAI::onFrame()
 	{
 		TournamentModuleState state = TournamentModuleState();
 		state.update(timerLimitsExceeded);
-		state.write("gameState.txt");
+		state.write("gameState.txt", folder);
 	}
 
 	if (killLimitTimer.getElapsedTimeInSec() - timeOfLastKill > noKillsSecondsLimit)
