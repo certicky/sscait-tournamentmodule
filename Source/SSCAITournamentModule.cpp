@@ -64,11 +64,9 @@ public:
 	}
 	
 	bool write(std::string filename, std::string directory)
-	//bool write(std::string filename, char directory)
 	{
 		char tmpDir[MAX_PATH];
 		GetCurrentDirectory(MAX_PATH, tmpDir);
-		BWAPI::Broodwar->printf("tmpDir: %s", tmpDir);
 		// change current directory the correct one
 		SetCurrentDirectory(directory.c_str());
 		
@@ -135,8 +133,7 @@ void SSCAITournamentAI::onStart()
 	GetModuleFileName(NULL, buffer, MAX_PATH);
 	BWAPI::Broodwar->printf("Path is %s", buffer);
 	std::string path(buffer);
-	folder = path.substr(0, path.find_last_of("/\\"));
-	//BWAPI::Broodwar->printf("Folder is %s", folder.c_str());
+	folder = path.substr(0, path.find_last_of("/\\")); // removes \\StarCraft.exe
 
 	// Set the command optimization level (reduces high APM, size of bloated replays, etc)
 	Broodwar->setCommandOptimizationLevel(MINIMUM_COMMAND_OPTIMIZATION);
@@ -170,7 +167,7 @@ void SSCAITournamentAI::onEnd(bool isWinner)
 	TournamentModuleState state = TournamentModuleState();
 	state.ended();
 	state.update(timerLimitsExceeded);
-	//state.write("gameState.txt", *buffer);
+	state.write("gameState.txt", folder);
 }
 
 void SSCAITournamentAI::onFrame()
@@ -186,13 +183,7 @@ void SSCAITournamentAI::onFrame()
 	{
 		TournamentModuleState state = TournamentModuleState();
 		state.update(timerLimitsExceeded);
-		SetCurrentDirectory("bwapi-data\\");
-		//state.write("gameState.txt", *buffer);
-		//char test[] = "D:\\Spel\\Starcraft";
-		//std::string test = "D:\\Spel\\Starcraft";
 		state.write("gameState.txt", folder);
-		BWAPI::Broodwar->printf("buffer: %s", buffer);
-		BWAPI::Broodwar->printf("test: %s", folder.c_str());
 	}
 
 	if (killLimitTimer.getElapsedTimeInSec() - timeOfLastKill > noKillsSecondsLimit)
