@@ -117,6 +117,8 @@ int gameTimeLimit = 85714;
 int zeroSpeedTime = 85714;
 int noKillsSecondsLimit = 300;
 int gameStartMaxSpeedTime = 90*16; // nr of frames with max speed in start of the game (16 frames/second)
+int noCombatSpeedUpTime = 2*60*16; // nr of frames to start speed up non-combat situations (20 in-game minutes)
+int noCombatSpeedUpDelay = 30*16; // nr of frames before speeding up game (30 in-game seconds)
 
 bool drawBotNames = true;
 bool drawUnitInfo = false;
@@ -129,6 +131,7 @@ std::vector<int> frameTimes(100000,0);
 
 Timer killLimitTimer;
 int timeOfLastKill = 0;
+int nrFramesOfLastKill = 0;
 
 void SSCAITournamentAI::onStart()
 {
@@ -246,6 +249,21 @@ void SSCAITournamentAI::onFrame()
 	if (Broodwar->getFrameCount() >= zeroSpeedTime && Broodwar->getFrameCount() <= zeroSpeedTime+32) {
 		Broodwar->setLocalSpeed(0);
 		localSpeed = 0;
+	}
+
+	if (Broodwar->getFrameCount() >= noCombatSpeedUpTime 
+		&& Broodwar->getFrameCount() < zeroSpeedTime)
+	{
+		if (localSpeed != 0 && Broodwar->getFrameCount() > nrFramesOfLastKill+noCombatSpeedUpDelay)
+		{
+			Broodwar->setLocalSpeed(0);
+			localSpeed = 0;
+		}
+		else if (localSpeed != targetLocalSpeed && Broodwar->getFrameCount() <= nrFramesOfLastKill+noCombatSpeedUpDelay)
+		{
+			Broodwar->setLocalSpeed(targetLocalSpeed);
+			localSpeed = targetLocalSpeed;
+		}
 	}
 }
 
@@ -424,6 +442,7 @@ void SSCAITournamentAI::onUnitDestroy(BWAPI::Unit* unit)
 	if (!(unit->getType().isMineralField() || unit->getType().isSpell() || unit->isHallucination()))
 	{
 		timeOfLastKill = killLimitTimer.getElapsedTimeInSec();
+		nrFramesOfLastKill = Broodwar->getFrameCount();
 	}
 	
 	if (localSpeed != targetLocalSpeed && Broodwar->getFrameCount() < zeroSpeedTime)
