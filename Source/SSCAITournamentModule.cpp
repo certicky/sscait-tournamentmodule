@@ -131,7 +131,7 @@ std::vector<int> frameTimes(100000,0);
 
 Timer killLimitTimer;
 int timeOfLastKill = 0;
-int nrFramesOfLastKill = 0;
+int nrFramesOfLastCombat = 0;
 
 void SSCAITournamentAI::onStart()
 {
@@ -252,14 +252,14 @@ void SSCAITournamentAI::onFrame()
 	}
 
 	if (Broodwar->getFrameCount() >= noCombatSpeedUpTime 
-		&& Broodwar->getFrameCount() < zeroSpeedTime)
+		&& Broodwar->getFrameCount() < zeroSpeedTime) //if in correct interval
 	{
-		if (localSpeed != 0 && Broodwar->getFrameCount() > nrFramesOfLastKill+noCombatSpeedUpDelay)
+		if (localSpeed != 0 && Broodwar->getFrameCount() > nrFramesOfLastCombat+noCombatSpeedUpDelay)
 		{
 			Broodwar->setLocalSpeed(0);
 			localSpeed = 0;
 		}
-		else if (localSpeed != targetLocalSpeed && Broodwar->getFrameCount() <= nrFramesOfLastKill+noCombatSpeedUpDelay)
+		else if (localSpeed != targetLocalSpeed && Broodwar->getFrameCount() <= nrFramesOfLastCombat+noCombatSpeedUpDelay)
 		{
 			Broodwar->setLocalSpeed(targetLocalSpeed);
 			localSpeed = targetLocalSpeed;
@@ -442,7 +442,7 @@ void SSCAITournamentAI::onUnitDestroy(BWAPI::Unit* unit)
 	if (!(unit->getType().isMineralField() || unit->getType().isSpell() || unit->isHallucination()))
 	{
 		timeOfLastKill = killLimitTimer.getElapsedTimeInSec();
-		nrFramesOfLastKill = Broodwar->getFrameCount();
+		nrFramesOfLastCombat = Broodwar->getFrameCount();
 	}
 	
 	if (localSpeed != targetLocalSpeed && Broodwar->getFrameCount() < zeroSpeedTime)
@@ -602,6 +602,14 @@ void SSCAITournamentAI::parseConfigFile(const std::string & filename)
 		else if (strcmp(option.c_str(), "NoKillsRealSecondsLimit") == 0)
 		{
 			iss >> noKillsSecondsLimit;
+		}
+		else if (strcmp(option.c_str(), "NoCombatSpeedUpTime") == 0)
+		{
+			iss >> noCombatSpeedUpTime;
+		}
+		else if (strcmp(option.c_str(), "NoCombatSpeedUpDelay") == 0)
+		{
+			iss >> noCombatSpeedUpDelay;
 		}
 		else if (strcmp(option.c_str(), "InitMaxSpeedTime") == 0)
 		{
