@@ -117,7 +117,7 @@ int gameTimeLimit = 85714;
 int zeroSpeedTime = 85714;
 int noKillsSecondsLimit = 300;
 int gameStartMaxSpeedTime = 90*16; // nr of frames with max speed in start of the game (16 frames/second)
-int noCombatSpeedUpTime = 2*60*16; // nr of frames to start speed up non-combat situations (20 in-game minutes)
+int noCombatSpeedUpTime = 10*60*16; // nr of frames to start speed up non-combat situations (10 in-game minutes)
 int noCombatSpeedUpDelay = 30*16; // nr of frames before speeding up game (30 in-game seconds)
 
 bool drawBotNames = true;
@@ -254,6 +254,30 @@ void SSCAITournamentAI::onFrame()
 	if (Broodwar->getFrameCount() >= noCombatSpeedUpTime 
 		&& Broodwar->getFrameCount() < zeroSpeedTime) //if in correct interval
 	{
+		if (Broodwar->getFrameCount() % 16 == 0)
+		{
+			//Check if any of our units are close to enemies, if so, make sure not zero speed
+			int radius = 150;
+			bool unitCloseEnough = false;
+			for each (BWAPI::Unit* unit1 in Broodwar->enemy()->getUnits())
+			{
+				BWAPI::Position uPos = unit1->getPosition();
+				for each (BWAPI::Unit* unit2 in BWAPI::Broodwar->getUnitsInRadius(uPos, radius))
+				{
+					if (unit2->getPlayer() == Broodwar->self())
+					{
+						unitCloseEnough = true;
+						break;
+					}
+				}
+				if (unitCloseEnough)
+				{
+					nrFramesOfLastCombat = Broodwar->getFrameCount();
+					break;
+				}
+			}
+		}
+
 		if (localSpeed != 0 && Broodwar->getFrameCount() > nrFramesOfLastCombat+noCombatSpeedUpDelay)
 		{
 			Broodwar->setLocalSpeed(0);
