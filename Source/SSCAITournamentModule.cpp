@@ -44,10 +44,11 @@ public:
 		gameElapsedTime = 0;
 	}
 
-	void update(std::vector<int> & times)
+	void update(std::vector<int> & times, int nrFrames)
 	{
-		// TODO if no-kills limit, set framecount to frame limit
-		frameCount		= BWAPI::Broodwar->getFrameCount();
+		// if game ended because of no-kills limit, set framecount to frame limit (parameter)
+		frameCount		= nrFrames;
+
 		selfScore		= BWAPI::Broodwar->self()->getKillScore() + BWAPI::Broodwar->self()->getRazingScore();
 						//+ BWAPI::Broodwar->self()->getBuildingScore() 
 						//+ BWAPI::Broodwar->self()->gatheredMinerals()
@@ -109,6 +110,7 @@ public:
 std::vector<int> timerLimits;
 std::vector<int> timerLimitsBound;
 std::vector<int> timerLimitsExceeded;
+bool gameOverNoKillsLimit = false;
 
 int targetLocalSpeed = 10; // the local speed used during gameplay (excluding initial and final max speeds)
 int localSpeed = targetLocalSpeed; // actual current game speed, gets overwritten when changing speed
@@ -172,7 +174,8 @@ void SSCAITournamentAI::onEnd(bool isWinner)
 {
 	TournamentModuleState state = TournamentModuleState();
 	state.ended();
-	state.update(timerLimitsExceeded);
+	int frameCount = gameOverNoKillsLimit ? gameTimeLimit : Broodwar->getFrameCount();
+	state.update(timerLimitsExceeded, frameCount);
 	state.write("gameState.txt", folder);
 }
 
@@ -188,13 +191,14 @@ void SSCAITournamentAI::onFrame()
 	if (Broodwar->getFrameCount() % 360 == 0)
 	{
 		TournamentModuleState state = TournamentModuleState();
-		state.update(timerLimitsExceeded);
+		state.update(timerLimitsExceeded, Broodwar->getFrameCount());
 		state.write("gameState.txt", folder);
 	}
 
 	if (killLimitTimer.getElapsedTimeInSec() - timeOfLastKill > noKillsSecondsLimit)
 	{
 		Broodwar->sendText("No unit killed for %d seconds, exiting", noKillsSecondsLimit);
+		gameOverNoKillsLimit = true;
 		Broodwar->leaveGame();
 	}
 
