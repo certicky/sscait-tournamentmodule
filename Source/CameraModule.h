@@ -17,6 +17,8 @@ private:
   BWAPI::Position myStartLocation;
 
 public:
+  int scrWidth;
+  int scrHeight;
   int cameraMoveTime;
   int cameraMoveTimeMin;
   int watchScoutWorkerUntil;
@@ -25,7 +27,7 @@ public:
   BWAPI::Position lastMovedPosition;
 
   CameraModule();
-  virtual void onStart(BWAPI::Position startPos);
+  virtual void onStart(BWAPI::Position startPos, int screenWidth, int screenHeight);
   virtual void onFrame();
   virtual bool isNearEnemyBuilding(BWAPI::Unit* unit, std::set<BWAPI::Unit*> &enemyUnits);
   virtual bool isNearStartLocation(BWAPI::Position pos);

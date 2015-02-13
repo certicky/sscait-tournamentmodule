@@ -13,9 +13,11 @@ CameraModule::CameraModule()
 	lastMovedPosition = BWAPI::Position(0, 0);
 }
 
-void CameraModule::onStart(BWAPI::Position startPos)
+void CameraModule::onStart(BWAPI::Position startPos, int screenWidth, int screenHeight)
 {
 	myStartLocation = startPos;
+	scrWidth = screenWidth;
+	scrHeight = screenHeight;
 }
 
 void CameraModule::onFrame()
@@ -182,7 +184,8 @@ void CameraModule::moveCamera(BWAPI::Position pos, int priority) {
 		return;
 	}
 
-	BWAPI::Position currentMovedPosition = pos - BWAPI::Position(320, 200);
+	// center position on screen
+	BWAPI::Position currentMovedPosition = pos - BWAPI::Position(scrWidth/2, scrHeight/2 - 40); // -40 to account for HUD
 
 	if (currentMovedPosition.getDistance(lastMovedPosition) > 4.0f * TILE_SIZE && currentMovedPosition.isValid()) {
 		BWAPI::Broodwar->setScreenPosition(currentMovedPosition);

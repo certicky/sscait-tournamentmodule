@@ -168,7 +168,7 @@ void SSCAITournamentAI::onStart()
 	myStartLocation = Position(Broodwar->self()->getStartLocation().x()*TILE_SIZE, Broodwar->self()->getStartLocation().y()*TILE_SIZE);
 	Broodwar->printf("Start position: %d %d", myStartLocation.x(), myStartLocation.y());
 
-	camera.onStart(myStartLocation);
+	camera.onStart(myStartLocation, screenWidth, screenHeight);
 	killLimitTimer.start();
 }
 
