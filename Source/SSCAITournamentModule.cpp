@@ -122,6 +122,9 @@ int gameStartMaxSpeedTime = 90*16; // nr of frames with max speed in start of th
 int noCombatSpeedUpTime = 10*60*16; // nr of frames to start speed up non-combat situations (10 in-game minutes)
 int noCombatSpeedUpDelay = 30*16; // nr of frames before speeding up game (30 in-game seconds)
 
+int screenWidth = 640;
+int screenHeight = 480;
+
 bool drawBotNames = true;
 bool drawUnitInfo = false;
 bool drawTournamentInfo = true;
@@ -338,7 +341,7 @@ void SSCAITournamentAI::drawTournamentModuleSettings(int x, int y)
 		BWAPI::Broodwar->drawTextScreen(drawX + width, drawY, " %i:%s%i", seconds/60, (seconds % 60 < 10) ? "0" : "", seconds % 60);
 		drawY += 10;
 
-		drawX = 420;
+		drawX = screenWidth - 220; // corresponds to 420 if default screenWidth is used
 		drawY = y + 18;
 
 		BWAPI::Broodwar->setTextSize(2);
@@ -642,6 +645,14 @@ void SSCAITournamentAI::parseConfigFile(const std::string & filename)
 		else if (strcmp(option.c_str(), "InitMaxSpeedTime") == 0)
 		{
 			iss >> gameStartMaxSpeedTime;
+		}
+		else if (strcmp(option.c_str(), "ScreenWidth") == 0)
+		{
+			iss >> screenWidth;
+		}
+		else if (strcmp(option.c_str(), "ScreenHeight") == 0)
+		{
+			iss >> screenHeight;
 		}
 		else if (strcmp(option.c_str(), "DrawUnitInfo") == 0)
         {
