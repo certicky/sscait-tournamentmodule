@@ -240,7 +240,7 @@ void SSCAITournamentAI::onFrame()
 		}
 	}
 
-	drawTournamentModuleSettings(10, 10);
+	drawTournamentModuleSettings();
 
 	if (drawUnitInfo)
 	{
@@ -298,8 +298,12 @@ void SSCAITournamentAI::onFrame()
 	}
 }
 
-void SSCAITournamentAI::drawTournamentModuleSettings(int x, int y)
+void SSCAITournamentAI::drawTournamentModuleSettings()
 {
+	int hudOffset = 200;
+	int nrTextRows = 5;
+	int x = 10;
+	int y = screenHeight - hudOffset - nrTextRows*10;
 	int drawX = x;
 	int drawY = y;
 	int width = 120;
@@ -342,7 +346,7 @@ void SSCAITournamentAI::drawTournamentModuleSettings(int x, int y)
 		drawY += 10;
 
 		drawX = screenWidth - 220; // corresponds to 420 if default screenWidth is used
-		drawY = y + 18;
+		drawY = y;
 
 		BWAPI::Broodwar->setTextSize(2);
 		Broodwar->drawTextScreen(drawX, drawY, "\x03%s", BWAPI::Broodwar->mapFileName().c_str());

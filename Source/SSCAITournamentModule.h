@@ -46,7 +46,7 @@ public:
   virtual void onUnitComplete(BWAPI::Unit *unit);
   virtual void onPlayerDropped(BWAPI::Player* player);
   virtual void drawUnitInformation(int x, int y);
-  virtual void drawTournamentModuleSettings(int x, int y);
+  virtual void drawTournamentModuleSettings();
   virtual void parseConfigFile(const std::string & filename);
   virtual std::vector<std::string> getLines(const std::string & filename);
 };
