@@ -360,8 +360,8 @@ void SSCAITournamentAI::drawTournamentModuleSettings(int x, int y)
 
 	if (drawBotNames)
 	{
-		int boxX = 200;
-		int rowY = 310;
+		int boxX = screenWidth/2 - 120; // 200 for default screen width of 640
+		int rowY = screenHeight - 170; // 310 for default screen height of 480
 		
 		Broodwar->drawBoxScreen(boxX, rowY, boxX + 17, rowY + 17, Colors::Green, true);
 		Broodwar->drawBoxScreen(boxX + 1, rowY + 1, boxX + 16, rowY + 16, Broodwar->self()->getColor(), true);
@@ -369,7 +369,7 @@ void SSCAITournamentAI::drawTournamentModuleSettings(int x, int y)
 		BWAPI::Broodwar->setTextSize(2);
 		Broodwar->drawTextScreen(boxX + 25, rowY - 1, "\x07%s (%c)", BWAPI::Broodwar->self()->getName().c_str(), Broodwar->self()->getRace().getName().c_str()[0]);
 
-		rowY = 335;
+		rowY = rowY + 25; // 335 for default screen height of 480
 
 		Broodwar->drawBoxScreen(boxX, rowY, boxX + 17, rowY + 17, Colors::Green, true);
 		Broodwar->drawBoxScreen(boxX + 1, rowY + 1, boxX + 16, rowY + 16, Broodwar->enemy()->getColor(), true);
