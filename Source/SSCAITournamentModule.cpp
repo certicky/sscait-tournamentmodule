@@ -300,13 +300,15 @@ void SSCAITournamentAI::onFrame()
 
 void SSCAITournamentAI::drawTournamentModuleSettings()
 {
-	int hudOffset = 200;
+	int hudOffset = 180;
 	int nrTextRows = 5;
+	int textSize = 2;
+	int rowDistance = 20;
 	int x = 10;
-	int y = screenHeight - hudOffset - nrTextRows*10;
+	int y = screenHeight - hudOffset - nrTextRows*rowDistance;
 	int drawX = x;
 	int drawY = y;
-	int width = 120;
+	int width = 180;
 
 	/*Broodwar->drawTextScreen(drawX, drawY, "\x04 Player Name:");
 	Broodwar->drawTextScreen(drawX+width, drawY, "\x07 %s", BWAPI::Broodwar->self()->getName().c_str());
@@ -322,63 +324,64 @@ void SSCAITournamentAI::drawTournamentModuleSettings()
 
 	if (drawTournamentInfo)
 	{
-		BWAPI::Broodwar->setTextSize();
+		BWAPI::Broodwar->setTextSize(textSize);
 
 		BWAPI::Broodwar->drawTextScreen(drawX, drawY, "\x04 Elapsed in-game time: ");
 		BWAPI::Broodwar->drawTextScreen(drawX + width, drawY, " %d:%s%d (%d)", Broodwar->elapsedTime() / 60, (Broodwar->elapsedTime() % 60 < 10) ? "0" : "", Broodwar->elapsedTime() % 60, Broodwar->getFrameCount());
-		drawY += 10;
+		drawY += rowDistance;
 
 		BWAPI::Broodwar->drawTextScreen(drawX, drawY, "\x04 Game time limit: ");
 		BWAPI::Broodwar->drawTextScreen(drawX + width, drawY, " %d:%s%d (%d)", gameTimeLimit / 16 / 60, ((gameTimeLimit / 16) % 60 < 10) ? "0" : "", (gameTimeLimit / 16) % 60, gameTimeLimit);
-		drawY += 10;
+		drawY += rowDistance;
 
 		BWAPI::Broodwar->drawTextScreen(drawX, drawY, "\x04 BWAPI local speed: ");
 		BWAPI::Broodwar->drawTextScreen(drawX + width, drawY, " %d", localSpeed);
-		drawY += 10;
+		drawY += rowDistance;
 
 		BWAPI::Broodwar->drawTextScreen(drawX, drawY, "\x04 BWAPI frame skip: ");
 		BWAPI::Broodwar->drawTextScreen(drawX + width, drawY, " %d", frameSkip);
-		drawY += 10;
+		drawY += rowDistance;
 
 		BWAPI::Broodwar->drawTextScreen(drawX, drawY, "\x04 No-kills time limit: ");
 		int seconds = (noKillsSecondsLimit - (int)(killLimitTimer.getElapsedTimeInSec() - timeOfLastKill));
 		BWAPI::Broodwar->drawTextScreen(drawX + width, drawY, " %i:%s%i", seconds/60, (seconds % 60 < 10) ? "0" : "", seconds % 60);
-		drawY += 10;
+		drawY += rowDistance;
 
-		drawX = screenWidth - 220; // corresponds to 420 if default screenWidth is used
+		drawX = screenWidth - 300;
 		drawY = y;
 
-		BWAPI::Broodwar->setTextSize(2);
+		BWAPI::Broodwar->setTextSize(textSize+1);
 		Broodwar->drawTextScreen(drawX, drawY, "\x03%s", BWAPI::Broodwar->mapFileName().c_str());
-		BWAPI::Broodwar->setTextSize();
+		BWAPI::Broodwar->setTextSize(textSize);
 
 		drawX -= 5;
-		drawY += 20;
+		drawY += rowDistance+10;
 		for (size_t t(0); t<timerLimits.size(); ++t)
 		{
 			BWAPI::Broodwar->drawTextScreen(drawX, drawY, "\x04 # Frames > %d ms ", timerLimits[t]);
 			BWAPI::Broodwar->drawTextScreen(drawX + width, drawY, " %d   (Max %d)", timerLimitsExceeded[t], timerLimitsBound[t]);
-			drawY += 10;
+			drawY += rowDistance;
 		}
 	}
 
 	if (drawBotNames)
 	{
-		int boxX = screenWidth/2 - 120; // 200 for default screen width of 640
-		int rowY = screenHeight - 170; // 310 for default screen height of 480
+		int boxX = screenWidth/2 - 120;
+		int rowY = screenHeight - 180;
+		int boxSize = 17;
 		
-		Broodwar->drawBoxScreen(boxX, rowY, boxX + 17, rowY + 17, Colors::Green, true);
-		Broodwar->drawBoxScreen(boxX + 1, rowY + 1, boxX + 16, rowY + 16, Broodwar->self()->getColor(), true);
+		Broodwar->drawBoxScreen(boxX, rowY, boxX + boxSize, rowY + boxSize, Colors::Green, true);
+		Broodwar->drawBoxScreen(boxX + 1, rowY + 1, boxX + boxSize-1, rowY + boxSize-1, Broodwar->self()->getColor(), true);
 
-		BWAPI::Broodwar->setTextSize(2);
+		BWAPI::Broodwar->setTextSize(textSize+1);
 		Broodwar->drawTextScreen(boxX + 25, rowY - 1, "\x07%s (%c)", BWAPI::Broodwar->self()->getName().c_str(), Broodwar->self()->getRace().getName().c_str()[0]);
 
-		rowY = rowY + 25; // 335 for default screen height of 480
+		rowY = rowY + 30;
 
-		Broodwar->drawBoxScreen(boxX, rowY, boxX + 17, rowY + 17, Colors::Green, true);
-		Broodwar->drawBoxScreen(boxX + 1, rowY + 1, boxX + 16, rowY + 16, Broodwar->enemy()->getColor(), true);
+		Broodwar->drawBoxScreen(boxX, rowY, boxX + boxSize, rowY + boxSize, Colors::Green, true);
+		Broodwar->drawBoxScreen(boxX + 1, rowY + 1, boxX + boxSize-1, rowY + boxSize-1, Broodwar->enemy()->getColor(), true);
 
-		BWAPI::Broodwar->setTextSize(2);
+		BWAPI::Broodwar->setTextSize(textSize+1);
 		Broodwar->drawTextScreen(boxX + 25, rowY - 1, "\x07%s (%c)", BWAPI::Broodwar->enemy()->getName().c_str(), Broodwar->enemy()->getRace().getName().c_str()[0]);
 	}	
 
