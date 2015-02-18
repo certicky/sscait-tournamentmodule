@@ -300,15 +300,24 @@ void SSCAITournamentAI::onFrame()
 
 void SSCAITournamentAI::drawTournamentModuleSettings()
 {
-	int hudOffset = 180;
+	bool largeScreen = screenWidth > 800 && screenHeight > 600;
+	int hudOffset = 190;
 	int nrTextRows = 5;
-	int textSize = 2;
-	int rowDistance = 20;
+	int textSize = 1;
+	int rowDistance = 10;
+	int width = 120;
+	int rightSideInset = 220;
+	if (largeScreen)
+	{
+		textSize = 2;
+		rowDistance = 15;
+		width = 180;
+		rightSideInset = 300;
+	}
 	int x = 10;
 	int y = screenHeight - hudOffset - nrTextRows*rowDistance;
 	int drawX = x;
 	int drawY = y;
-	int width = 180;
 
 	/*Broodwar->drawTextScreen(drawX, drawY, "\x04 Player Name:");
 	Broodwar->drawTextScreen(drawX+width, drawY, "\x07 %s", BWAPI::Broodwar->self()->getName().c_str());
@@ -347,7 +356,7 @@ void SSCAITournamentAI::drawTournamentModuleSettings()
 		BWAPI::Broodwar->drawTextScreen(drawX + width, drawY, " %i:%s%i", seconds/60, (seconds % 60 < 10) ? "0" : "", seconds % 60);
 		drawY += rowDistance;
 
-		drawX = screenWidth - 300;
+		drawX = screenWidth - rightSideInset;
 		drawY = y;
 
 		BWAPI::Broodwar->setTextSize(textSize+1);
