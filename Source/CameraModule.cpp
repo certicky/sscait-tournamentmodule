@@ -11,11 +11,15 @@ CameraModule::CameraModule()
 	lastMoved = 0;
 	lastMovedPriority = 0;
 	lastMovedPosition = BWAPI::Position(0, 0);
+	cameraFocusPosition = BWAPI::Position(0, 0);
+	cameraFocusUnit = NULL;
+	followUnit = false;
 }
 
 void CameraModule::onStart(BWAPI::Position startPos, int screenWidth, int screenHeight)
 {
 	myStartLocation = startPos;
+	cameraFocusPosition = startPos;
 	scrWidth = screenWidth;
 	scrHeight = screenHeight;
 }
@@ -29,6 +33,8 @@ void CameraModule::onFrame()
 	}
 	moveCameraArmy();
 	moveCameraDrop();
+
+	updateCameraPosition();
 }
 
 bool CameraModule::isNearEnemyBuilding(BWAPI::Unit* unit, std::set<BWAPI::Unit*> &enemyUnits) {
@@ -178,24 +184,6 @@ void CameraModule::moveCameraArmy() {
 	}
 }
 
-void CameraModule::moveCamera(BWAPI::Position pos, int priority) {
-	if (!shouldMoveCamera(priority))
-	{
-		return;
-	}
-
-	// center position on screen
-	BWAPI::Position currentMovedPosition = pos - BWAPI::Position(scrWidth/2, scrHeight/2 - 40); // -40 to account for HUD
-
-	if (currentMovedPosition.getDistance(lastMovedPosition) > 4.0f * TILE_SIZE && currentMovedPosition.isValid()) {
-		BWAPI::Broodwar->setScreenPosition(currentMovedPosition);
-		lastMovedPosition = currentMovedPosition;
-		lastMoved = BWAPI::Broodwar->getFrameCount();
-		lastMovedPriority = priority;
-	}
-}
-
-
 void CameraModule::moveCameraUnitCreated(BWAPI::Unit* unit)
 {
 	int prio = 1;
@@ -205,5 +193,26 @@ void CameraModule::moveCameraUnitCreated(BWAPI::Unit* unit)
 	}
 	else if (unit->getPlayer() == Broodwar->self() && !unit->getType().isWorker()) {
 		moveCamera(unit->getPosition(), prio);
+	}
+}
+
+void CameraModule::moveCamera(BWAPI::Position pos, int priority) {
+	if (!shouldMoveCamera(priority))
+	{
+		return;
+	}
+
+	cameraFocusPosition = pos;
+	lastMovedPosition = cameraFocusPosition;
+	lastMoved = BWAPI::Broodwar->getFrameCount();
+	lastMovedPriority = priority;
+}
+
+void CameraModule::updateCameraPosition() {
+	// center position on screen
+	BWAPI::Position currentMovedPosition = cameraFocusPosition - BWAPI::Position(scrWidth/2, scrHeight/2 - 40); // -40 to account for HUD
+
+	if (currentMovedPosition.getDistance(lastMovedPosition) > 4.0f * TILE_SIZE && currentMovedPosition.isValid()) {
+		BWAPI::Broodwar->setScreenPosition(currentMovedPosition);
 	}
 }

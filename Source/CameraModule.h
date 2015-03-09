@@ -22,9 +22,13 @@ public:
   int cameraMoveTime;
   int cameraMoveTimeMin;
   int watchScoutWorkerUntil;
+
   int lastMoved;
   int lastMovedPriority;
   BWAPI::Position lastMovedPosition;
+  BWAPI::Position cameraFocusPosition;
+  BWAPI::Unit* cameraFocusUnit;
+  bool followUnit;
 
   CameraModule();
   virtual void onStart(BWAPI::Position startPos, int screenWidth, int screenHeight);
@@ -41,4 +45,5 @@ public:
   virtual void moveCameraDrop();
   virtual void moveCameraArmy();
   virtual void moveCameraUnitCreated(BWAPI::Unit* unit);
+  virtual void updateCameraPosition();
 };
