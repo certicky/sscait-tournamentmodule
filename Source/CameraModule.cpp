@@ -91,7 +91,7 @@ void CameraModule::moveCameraIsUnderAttack()
 	{
 		if (unit->isUnderAttack())
 		{
-			moveCamera(unit->getPosition(), prio);
+			moveCamera(unit, prio);
 		}
 	}
 }
@@ -108,7 +108,7 @@ void CameraModule::moveCameraIsAttacking()
 	{
 		if (unit->isAttacking())
 		{
-			moveCamera(unit->getPosition(), prio);
+			moveCamera(unit, prio);
 		}
 	}
 }
@@ -128,7 +128,7 @@ void CameraModule::moveCameraScoutWorker() {
 		if (isNearStartLocation(unit->getPosition())) {
 			moveCamera(unit->getPosition(), highPrio);
 		} else if (!isNearOwnStartLocation(unit->getPosition())) {
-			moveCamera(unit->getPosition(), lowPrio);
+			moveCamera(unit, lowPrio);
 		}
 	}
 }
@@ -142,7 +142,7 @@ void CameraModule::moveCameraDrop() {
 	for each (BWAPI::Unit* unit in BWAPI::Broodwar->self()->getUnits()) {
 		if ((unit->getType() == UnitTypes::Zerg_Overlord || unit->getType() == UnitTypes::Terran_Dropship || unit->getType() == UnitTypes::Protoss_Shuttle)
 			&& isNearStartLocation(unit->getPosition()) && unit->getLoadedUnits().size() > 0) {
-			moveCamera(unit->getPosition(), prio);
+			moveCamera(unit, prio);
 		}
 	}
 }
@@ -155,8 +155,9 @@ void CameraModule::moveCameraArmy() {
 	}
 	// Double loop, check if army units are close to each other
 	int radius = 50;
-
+	
 	BWAPI::Position bestPos;
+	BWAPI::Unit* bestPosUnit;
 	int mostUnitsNearby = 0;
 
 	for each (BWAPI::Unit* unit1 in BWAPI::Broodwar->getAllUnits()) {
@@ -176,11 +177,12 @@ void CameraModule::moveCameraArmy() {
 		if (nrUnitsNearby > mostUnitsNearby) {
 			mostUnitsNearby = nrUnitsNearby;
 			bestPos = uPos;
+			bestPosUnit = unit1;
 		}
 	}
 
 	if (mostUnitsNearby > 1) {
-		moveCamera(bestPos, prio);
+		moveCamera(bestPosUnit, prio);
 	}
 }
 
@@ -192,7 +194,7 @@ void CameraModule::moveCameraUnitCreated(BWAPI::Unit* unit)
 		return;
 	}
 	else if (unit->getPlayer() == Broodwar->self() && !unit->getType().isWorker()) {
-		moveCamera(unit->getPosition(), prio);
+		moveCamera(unit, prio);
 	}
 }
 
@@ -206,11 +208,31 @@ void CameraModule::moveCamera(BWAPI::Position pos, int priority) {
 	lastMovedPosition = cameraFocusPosition;
 	lastMoved = BWAPI::Broodwar->getFrameCount();
 	lastMovedPriority = priority;
+	followUnit = false;
+}
+
+void CameraModule::moveCamera(BWAPI::Unit* unit, int priority) {
+	if (!shouldMoveCamera(priority))
+	{
+		return;
+	}
+
+	cameraFocusUnit = unit;
+	lastMovedPosition = cameraFocusUnit->getPosition();
+	lastMoved = BWAPI::Broodwar->getFrameCount();
+	lastMovedPriority = priority;
+	followUnit = true;
 }
 
 void CameraModule::updateCameraPosition() {
 	// center position on screen
-	BWAPI::Position currentMovedPosition = cameraFocusPosition - BWAPI::Position(scrWidth/2, scrHeight/2 - 40); // -40 to account for HUD
+	BWAPI::Position cameraPosition;
+	if (followUnit) {
+		cameraPosition = cameraFocusUnit->getPosition();
+	} else {
+		cameraPosition = cameraFocusPosition;
+	}
+	BWAPI::Position currentMovedPosition = cameraPosition - BWAPI::Position(scrWidth/2, scrHeight/2 - 40); // -40 to account for HUD
 
 	if (currentMovedPosition.getDistance(lastMovedPosition) > 4.0f * TILE_SIZE && currentMovedPosition.isValid()) {
 		BWAPI::Broodwar->setScreenPosition(currentMovedPosition);

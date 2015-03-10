@@ -38,9 +38,10 @@ public:
   virtual bool isNearOwnStartLocation(BWAPI::Position pos);
   virtual bool isArmyUnit(BWAPI::Unit* unit);
   virtual bool shouldMoveCamera(int priority);
+  virtual void moveCamera(BWAPI::Position pos, int priority);
+  virtual void moveCamera(BWAPI::Unit* unit, int priority);
   virtual void moveCameraIsAttacking();
   virtual void moveCameraIsUnderAttack();
-  virtual void moveCamera(BWAPI::Position pos, int priority);
   virtual void moveCameraScoutWorker();
   virtual void moveCameraDrop();
   virtual void moveCameraArmy();
