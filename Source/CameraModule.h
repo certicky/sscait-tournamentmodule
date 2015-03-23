@@ -26,6 +26,7 @@ public:
   int lastMoved;
   int lastMovedPriority;
   BWAPI::Position lastMovedPosition;
+  BWAPI::Position currentCameraPosition;
   BWAPI::Position cameraFocusPosition;
   BWAPI::Unit* cameraFocusUnit;
   bool followUnit;

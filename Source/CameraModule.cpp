@@ -7,7 +7,7 @@ CameraModule::CameraModule()
 {
 	cameraMoveTime = 150;
 	cameraMoveTimeMin = 50;
-	watchScoutWorkerUntil = 7000;
+	watchScoutWorkerUntil = 7500;
 	lastMoved = 0;
 	lastMovedPriority = 0;
 	lastMovedPosition = BWAPI::Position(0, 0);
@@ -20,6 +20,7 @@ void CameraModule::onStart(BWAPI::Position startPos, int screenWidth, int screen
 {
 	myStartLocation = startPos;
 	cameraFocusPosition = startPos;
+	currentCameraPosition = startPos;
 	scrWidth = screenWidth;
 	scrHeight = screenHeight;
 }
@@ -236,17 +237,22 @@ void CameraModule::moveCamera(BWAPI::Unit* unit, int priority) {
 }
 
 void CameraModule::updateCameraPosition() {
-	// center position on screen
-	BWAPI::Position cameraPosition;
+	double moveFactor = 0.1;
 	if (followUnit) {
-		cameraPosition = cameraFocusUnit->getPosition();
+		//cameraPosition = cameraFocusUnit->getPosition();
+		currentCameraPosition = currentCameraPosition + BWAPI::Position(
+			(int)(moveFactor*(cameraFocusUnit->getPosition().x() - currentCameraPosition.x())), 
+			(int)(moveFactor*(cameraFocusUnit->getPosition().y() - currentCameraPosition.y())));
 	} else {
-		cameraPosition = cameraFocusPosition;
+		//cameraPosition = cameraFocusPosition;
+		currentCameraPosition = currentCameraPosition + BWAPI::Position(
+			(int)(moveFactor*(cameraFocusPosition.x() - currentCameraPosition.x())), 
+			(int)(moveFactor*(cameraFocusPosition.y() - currentCameraPosition.y())));
 	}
-	BWAPI::Position currentMovedPosition = cameraPosition - BWAPI::Position(scrWidth/2, scrHeight/2 - 40); // -40 to account for HUD
+	BWAPI::Position currentMovedPosition = currentCameraPosition - BWAPI::Position(scrWidth/2, scrHeight/2 - 40); // -40 to account for HUD
 
 	//if (currentMovedPosition.getDistance(lastMovedPosition) > 4.0f * TILE_SIZE && cameraPosition.isValid()) {
-	if (cameraPosition.isValid()) {
+	if (currentCameraPosition.isValid()) {
 		BWAPI::Broodwar->setScreenPosition(currentMovedPosition);
 	}
 }
