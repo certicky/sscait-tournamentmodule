@@ -54,6 +54,7 @@ bool CameraModule::isNearStartLocation(BWAPI::Position pos) {
 	for (std::set<BWAPI::TilePosition>::iterator it = startLocations.begin(); it != startLocations.end(); it++) {
 		Position startLocation = BWAPI::Position(*it);
 		
+		// if the start position is not our own home, and the start position is closer than distance
 		if (!isNearOwnStartLocation(startLocation) && startLocation.getDistance(pos) <= distance) {
 			return true;
 		}
@@ -63,7 +64,7 @@ bool CameraModule::isNearStartLocation(BWAPI::Position pos) {
 }
 
 bool CameraModule::isNearOwnStartLocation(BWAPI::Position pos) {
-	int distance = 10 * TILE_SIZE;
+	int distance = 10 * TILE_SIZE; // 10*32
 	return (myStartLocation.getDistance(pos) <= distance);
 }
 
@@ -76,7 +77,11 @@ bool CameraModule::isArmyUnit(BWAPI::Unit* unit) {
 }
 
 bool CameraModule::shouldMoveCamera(int priority) {
-	return !(BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTime && (lastMovedPriority >= priority || BWAPI::Broodwar->getFrameCount() - lastMoved < cameraMoveTimeMin));
+	bool isTimeToMove = BWAPI::Broodwar->getFrameCount() - lastMoved >= cameraMoveTime;
+	bool isTimeToMoveIfHigherPrio = BWAPI::Broodwar->getFrameCount() - lastMoved >= cameraMoveTimeMin;
+	bool isHigherPrio = lastMovedPriority < priority;
+	// camera should move IF: enough time has passed OR (minimum time has passed AND new prio is higher)
+	return isTimeToMove || (isHigherPrio && isTimeToMoveIfHigherPrio);
 }
 
 void CameraModule::moveCameraIsUnderAttack()
@@ -126,7 +131,7 @@ void CameraModule::moveCameraScoutWorker() {
 			continue;
 		}
 		if (isNearStartLocation(unit->getPosition())) {
-			moveCamera(unit->getPosition(), highPrio);
+			moveCamera(unit, highPrio);
 		} else if (!isNearOwnStartLocation(unit->getPosition())) {
 			moveCamera(unit, lowPrio);
 		}
