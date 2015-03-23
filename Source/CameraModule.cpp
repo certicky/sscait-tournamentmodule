@@ -204,8 +204,11 @@ void CameraModule::moveCameraUnitCreated(BWAPI::Unit* unit)
 }
 
 void CameraModule::moveCamera(BWAPI::Position pos, int priority) {
-	if (!shouldMoveCamera(priority))
-	{
+	if (!shouldMoveCamera(priority)) {
+		return;
+	}
+	if (followUnit == false && cameraFocusPosition == pos) {
+		// don't register a camera move if the position is the same
 		return;
 	}
 
@@ -217,8 +220,11 @@ void CameraModule::moveCamera(BWAPI::Position pos, int priority) {
 }
 
 void CameraModule::moveCamera(BWAPI::Unit* unit, int priority) {
-	if (!shouldMoveCamera(priority))
-	{
+	if (!shouldMoveCamera(priority)) {
+		return;
+	}
+	if (followUnit == true && cameraFocusUnit == unit) {
+		// don't register a camera move if we follow the same unit
 		return;
 	}
 
