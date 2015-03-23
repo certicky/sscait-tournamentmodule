@@ -239,7 +239,8 @@ void CameraModule::updateCameraPosition() {
 	}
 	BWAPI::Position currentMovedPosition = cameraPosition - BWAPI::Position(scrWidth/2, scrHeight/2 - 40); // -40 to account for HUD
 
-	if (currentMovedPosition.getDistance(lastMovedPosition) > 4.0f * TILE_SIZE && currentMovedPosition.isValid()) {
+	//if (currentMovedPosition.getDistance(lastMovedPosition) > 4.0f * TILE_SIZE && cameraPosition.isValid()) {
+	if (cameraPosition.isValid()) {
 		BWAPI::Broodwar->setScreenPosition(currentMovedPosition);
 	}
 }
