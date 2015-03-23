@@ -218,6 +218,7 @@ void CameraModule::moveCamera(BWAPI::Position pos, int priority) {
 	lastMoved = BWAPI::Broodwar->getFrameCount();
 	lastMovedPriority = priority;
 	followUnit = false;
+	Broodwar->printf("Camera to position: %d %d", cameraFocusPosition.x(), cameraFocusPosition.y());
 }
 
 void CameraModule::moveCamera(BWAPI::Unit* unit, int priority) {
@@ -234,6 +235,7 @@ void CameraModule::moveCamera(BWAPI::Unit* unit, int priority) {
 	lastMoved = BWAPI::Broodwar->getFrameCount();
 	lastMovedPriority = priority;
 	followUnit = true;
+	Broodwar->printf("Camera to unit: %s", cameraFocusUnit->getType().getName().c_str());
 }
 
 void CameraModule::updateCameraPosition() {
@@ -253,6 +255,11 @@ void CameraModule::updateCameraPosition() {
 
 	//if (currentMovedPosition.getDistance(lastMovedPosition) > 4.0f * TILE_SIZE && cameraPosition.isValid()) {
 	if (currentCameraPosition.isValid()) {
+		
+		if (followUnit && !cameraFocusUnit->exists()) {
+			Broodwar->printf("cameraFocusUnit %s does not exist!", cameraFocusUnit->getType().getName().c_str());
+			Broodwar->printf("Its position is (%d, %d)", cameraFocusUnit->getPosition().x(), cameraFocusUnit->getPosition().y());
+		}
 		BWAPI::Broodwar->setScreenPosition(currentMovedPosition);
 	}
 }
