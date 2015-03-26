@@ -7,7 +7,7 @@ CameraModule::CameraModule()
 {
 	cameraMoveTime = 150;
 	cameraMoveTimeMin = 50;
-	watchScoutWorkerUntil = 7000;
+	watchScoutWorkerUntil = 7500;
 	lastMoved = 0;
 	lastMovedPriority = 0;
 	lastMovedPosition = BWAPI::Position(0, 0);
@@ -218,7 +218,6 @@ void CameraModule::moveCamera(BWAPI::Position pos, int priority) {
 	lastMoved = BWAPI::Broodwar->getFrameCount();
 	lastMovedPriority = priority;
 	followUnit = false;
-	Broodwar->printf("Camera to position: %d %d", cameraFocusPosition.x(), cameraFocusPosition.y());
 }
 
 void CameraModule::moveCamera(BWAPI::Unit* unit, int priority) {
@@ -230,13 +229,7 @@ void CameraModule::moveCamera(BWAPI::Unit* unit, int priority) {
 		return;
 	}
 	
-	Broodwar->printf("Camera to unit: %s", unit->getType().getName().c_str());
-	if (cameraFocusUnit != NULL) {
-		Broodwar->printf("Old position is (%d, %d)", cameraFocusUnit->getPosition().x(), cameraFocusUnit->getPosition().y());
-		Broodwar->printf("Old position valid: %i", cameraFocusUnit->getPosition().isValid());
-	}
 	cameraFocusUnit = unit;
-	Broodwar->printf("New position is (%d, %d)", cameraFocusUnit->getPosition().x(), cameraFocusUnit->getPosition().y());
 	lastMovedPosition = cameraFocusUnit->getPosition();
 	lastMoved = BWAPI::Broodwar->getFrameCount();
 	lastMovedPriority = priority;
@@ -249,17 +242,12 @@ void CameraModule::updateCameraPosition() {
 		cameraFocusPosition = cameraFocusUnit->getPosition();
 	}
 	currentCameraPosition = currentCameraPosition + BWAPI::Position(
-			(int)(moveFactor*(cameraFocusPosition.x() - currentCameraPosition.x())), 
-			(int)(moveFactor*(cameraFocusPosition.y() - currentCameraPosition.y())));
-	BWAPI::Position currentMovedPosition = currentCameraPosition - BWAPI::Position(scrWidth/2, scrHeight/2 - 40); // -40 to account for HUD
+		(int)(moveFactor*(cameraFocusPosition.x() - currentCameraPosition.x())), 
+		(int)(moveFactor*(cameraFocusPosition.y() - currentCameraPosition.y())));
+	BWAPI::Position currentMovedPosition = 
+		currentCameraPosition - BWAPI::Position(scrWidth/2, scrHeight/2 - 40); // -40 to account for HUD
 
-	//if (currentMovedPosition.getDistance(lastMovedPosition) > 4.0f * TILE_SIZE && cameraPosition.isValid()) {
 	if (currentCameraPosition.isValid()) {
-		
-		if (followUnit && !cameraFocusUnit->exists()) {
-			//Broodwar->printf("cameraFocusUnit %s does not exist!", cameraFocusUnit->getType().getName().c_str());
-			//Broodwar->printf("Its position is (%d, %d)", cameraFocusUnit->getPosition().x(), cameraFocusUnit->getPosition().y());
-		}
 		BWAPI::Broodwar->setScreenPosition(currentMovedPosition);
 	}
 }
