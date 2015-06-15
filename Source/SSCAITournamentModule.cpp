@@ -165,8 +165,8 @@ void SSCAITournamentAI::onStart()
 	localSpeed = 0;
 	Broodwar->setFrameSkip(frameSkip);
 
-	myStartLocation = Position(Broodwar->self()->getStartLocation().x()*TILE_SIZE, Broodwar->self()->getStartLocation().y()*TILE_SIZE);
-	Broodwar->printf("Start position: %d %d", myStartLocation.x(), myStartLocation.y());
+	myStartLocation = Position(Broodwar->self()->getStartLocation().x*TILE_SIZE, Broodwar->self()->getStartLocation().y*TILE_SIZE);
+	Broodwar->printf("Start position: %d %d", myStartLocation.x, myStartLocation.y);
 
 	camera.onStart(myStartLocation, screenWidth, screenHeight);
 	killLimitTimer.start();
@@ -266,10 +266,10 @@ void SSCAITournamentAI::onFrame()
 			//Check if any of our units are close to enemies, if so, make sure not zero speed
 			int radius = 150;
 			bool unitCloseEnough = false;
-			for each (BWAPI::Unit* unit1 in Broodwar->enemy()->getUnits())
+			for each (BWAPI::Unit unit1 in Broodwar->enemy()->getUnits())
 			{
 				BWAPI::Position uPos = unit1->getPosition();
-				for each (BWAPI::Unit* unit2 in BWAPI::Broodwar->getUnitsInRadius(uPos, radius))
+				for each (BWAPI::Unit unit2 in BWAPI::Broodwar->getUnitsInRadius(uPos, radius))
 				{
 					if (unit2->getPlayer() == Broodwar->self())
 					{
@@ -303,13 +303,15 @@ void SSCAITournamentAI::drawTournamentModuleSettings()
 	bool largeScreen = screenWidth > 800 && screenHeight > 600;
 	int hudOffset = 190;
 	int nrTextRows = 5;
-	int textSize = 1;
+	BWAPI::Text::Size::Enum textSize = BWAPI::Text::Size::Default;
+	BWAPI::Text::Size::Enum textSizeLarger = BWAPI::Text::Size::Large;
 	int rowDistance = 10;
 	int width = 120;
 	int rightSideInset = 220;
 	if (largeScreen)
 	{
-		textSize = 2;
+		textSize = BWAPI::Text::Size::Large;
+		textSizeLarger = BWAPI::Text::Size::Huge;
 		rowDistance = 15;
 		width = 180;
 		rightSideInset = 300;
@@ -359,7 +361,7 @@ void SSCAITournamentAI::drawTournamentModuleSettings()
 		drawX = screenWidth - rightSideInset;
 		drawY = y;
 
-		BWAPI::Broodwar->setTextSize(textSize+1);
+		BWAPI::Broodwar->setTextSize(textSizeLarger);
 		Broodwar->drawTextScreen(drawX, drawY, "\x03%s", BWAPI::Broodwar->mapFileName().c_str());
 		BWAPI::Broodwar->setTextSize(textSize);
 
@@ -382,7 +384,7 @@ void SSCAITournamentAI::drawTournamentModuleSettings()
 		Broodwar->drawBoxScreen(boxX, rowY, boxX + boxSize, rowY + boxSize, Colors::Green, true);
 		Broodwar->drawBoxScreen(boxX + 1, rowY + 1, boxX + boxSize-1, rowY + boxSize-1, Broodwar->self()->getColor(), true);
 
-		BWAPI::Broodwar->setTextSize(textSize+1);
+		BWAPI::Broodwar->setTextSize(textSizeLarger);
 		Broodwar->drawTextScreen(boxX + 25, rowY - 1, "\x07%s (%c)", BWAPI::Broodwar->self()->getName().c_str(), Broodwar->self()->getRace().getName().c_str()[0]);
 
 		rowY = rowY + 30;
@@ -390,7 +392,7 @@ void SSCAITournamentAI::drawTournamentModuleSettings()
 		Broodwar->drawBoxScreen(boxX, rowY, boxX + boxSize, rowY + boxSize, Colors::Green, true);
 		Broodwar->drawBoxScreen(boxX + 1, rowY + 1, boxX + boxSize-1, rowY + boxSize-1, Broodwar->enemy()->getColor(), true);
 
-		BWAPI::Broodwar->setTextSize(textSize+1);
+		BWAPI::Broodwar->setTextSize(textSizeLarger);
 		Broodwar->drawTextScreen(boxX + 25, rowY - 1, "\x07%s (%c)", BWAPI::Broodwar->enemy()->getName().c_str(), Broodwar->enemy()->getRace().getName().c_str()[0]);
 	}	
 
@@ -458,32 +460,32 @@ void SSCAITournamentAI::onNukeDetect(BWAPI::Position target)
 	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
 }
 
-void SSCAITournamentAI::onUnitDiscover(BWAPI::Unit* unit)
+void SSCAITournamentAI::onUnitDiscover(BWAPI::Unit unit)
 {
 	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
 }
 
-void SSCAITournamentAI::onUnitEvade(BWAPI::Unit* unit)
+void SSCAITournamentAI::onUnitEvade(BWAPI::Unit unit)
 {
 	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
 }
 
-void SSCAITournamentAI::onUnitShow(BWAPI::Unit* unit)
+void SSCAITournamentAI::onUnitShow(BWAPI::Unit unit)
 {
 	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
 }
 
-void SSCAITournamentAI::onUnitHide(BWAPI::Unit* unit)
+void SSCAITournamentAI::onUnitHide(BWAPI::Unit unit)
 {
 	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
 }
 
-void SSCAITournamentAI::onUnitCreate(BWAPI::Unit* unit)
+void SSCAITournamentAI::onUnitCreate(BWAPI::Unit unit)
 {
 	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
 }
 
-void SSCAITournamentAI::onUnitDestroy(BWAPI::Unit* unit)
+void SSCAITournamentAI::onUnitDestroy(BWAPI::Unit unit)
 {
 	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
 	if (!(unit->getType().isMineralField() || unit->getType().isSpell() || unit->isHallucination()))
@@ -499,19 +501,19 @@ void SSCAITournamentAI::onUnitDestroy(BWAPI::Unit* unit)
 	}
 }
 
-void SSCAITournamentAI::onUnitMorph(BWAPI::Unit* unit)
+void SSCAITournamentAI::onUnitMorph(BWAPI::Unit unit)
 {
 	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
 }
 
-void SSCAITournamentAI::onUnitComplete(BWAPI::Unit *unit)
+void SSCAITournamentAI::onUnitComplete(BWAPI::Unit unit)
 {
 	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
 	
 	camera.moveCameraUnitCreated(unit);
 }
 
-void SSCAITournamentAI::onUnitRenegade(BWAPI::Unit* unit)
+void SSCAITournamentAI::onUnitRenegade(BWAPI::Unit unit)
 {
 }
 
@@ -531,14 +533,12 @@ bool SSCAITournamentModule::onAction(int actionType, void *parameter)
 			}
 
 		case Tournament::PauseGame:
-		case Tournament::RestartGame:
 		case Tournament::ResumeGame:
 		case Tournament::SetFrameSkip:
 		case Tournament::SetGUI:
 		case Tournament::SetLocalSpeed:					return false;
 		case Tournament::SetMap:						return false; 
 		case Tournament::LeaveGame:
-		case Tournament::ChangeRace:
 		case Tournament::SetLatCom:
 		case Tournament::SetTextSize:
 		case Tournament::SendText:
