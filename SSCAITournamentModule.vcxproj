@@ -51,7 +51,7 @@
       <Command />
     </PreLinkEvent>
     <Link>
-      <AdditionalDependencies>Shlwapi.lib;../BWAPI 3.7.4/lib/BWAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Shlwapi.lib;../BWAPI_4.1.1/lib/BWAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
