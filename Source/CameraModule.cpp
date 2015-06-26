@@ -40,7 +40,10 @@ void CameraModule::onFrame()
 
 bool CameraModule::isNearEnemyBuilding(BWAPI::Unit unit, std::set<BWAPI::Unit> &enemyUnits) {
 	for (std::set<BWAPI::Unit>::iterator it = enemyUnits.begin(); it != enemyUnits.end(); it++) {
-		if ((*it)->getType().isBuilding() && unit->getDistance(*it) <= TILE_SIZE*20 && (Broodwar->self()->isEnemy((*it)->getPlayer()) || ((*it)->getPlayer()->isNeutral() && (*it)->getType().isAddon())) && (*it)->getType() != UnitTypes::Terran_Vulture_Spider_Mine/* && !(*it)->isLifted()*/) {
+		if ((*it)->getType().isBuilding() 
+			&& unit->getDistance(*it) <= TILE_SIZE*20 
+			&& (Broodwar->self()->isEnemy((*it)->getPlayer()) || ((*it)->getPlayer()->isNeutral() && (*it)->getType().isAddon())) 
+			&& (*it)->getType() != UnitTypes::Terran_Vulture_Spider_Mine/* && !(*it)->isLifted()*/) {
 			return true;
 		}
 	}
