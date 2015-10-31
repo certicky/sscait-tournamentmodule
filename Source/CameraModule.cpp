@@ -27,6 +27,7 @@ void CameraModule::onStart(BWAPI::Position startPos, int screenWidth, int screen
 
 void CameraModule::onFrame()
 {
+	moveCameraFallingNuke();
 	moveCameraIsUnderAttack();
 	moveCameraIsAttacking();
 	if (Broodwar->getFrameCount() <= watchScoutWorkerUntil) {
@@ -119,6 +120,24 @@ void CameraModule::moveCameraIsAttacking()
 	}
 }
 
+void CameraModule::moveCameraFallingNuke()
+{
+	int prio = 5;
+	if (!shouldMoveCamera(prio))
+	{
+		return;
+	}
+
+	for each (BWAPI::Unit * unit in BWAPI::Broodwar->getAllUnits())
+	{
+		if (unit->getType() == UnitTypes::Terran_Nuclear_Missile)
+		{
+			moveCamera(unit, prio);
+			return;
+		}
+	}
+}
+
 void CameraModule::moveCameraScoutWorker() {
 	int highPrio = 2;
 	int lowPrio = 0;
@@ -136,6 +155,17 @@ void CameraModule::moveCameraScoutWorker() {
 		} else if (!isNearOwnStartLocation(unit->getPosition())) {
 			moveCamera(unit, lowPrio);
 		}
+	}
+}
+
+void CameraModule::moveCameraNukeDetect(BWAPI::Position target) {
+	int prio = 4;
+	if (!shouldMoveCamera(prio))
+	{
+		return;
+	}
+	else {
+		moveCamera(target, prio);
 	}
 }
 
