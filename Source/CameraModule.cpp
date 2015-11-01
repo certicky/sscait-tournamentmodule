@@ -130,7 +130,7 @@ void CameraModule::moveCameraFallingNuke()
 
 	for each (BWAPI::Unit * unit in BWAPI::Broodwar->getAllUnits())
 	{
-		if (unit->getType() == UnitTypes::Terran_Nuclear_Missile)
+		if (unit->getType() == UnitTypes::Terran_Nuclear_Missile && unit->getVelocityY() > 0)
 		{
 			moveCamera(unit, prio);
 			return;
