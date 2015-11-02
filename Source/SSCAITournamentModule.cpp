@@ -458,6 +458,8 @@ void SSCAITournamentAI::onPlayerDropped(BWAPI::Player* player)
 void SSCAITournamentAI::onNukeDetect(BWAPI::Position target)
 {
 	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+
+	camera.moveCameraNukeDetect(target);
 }
 
 void SSCAITournamentAI::onUnitDiscover(BWAPI::Unit unit)

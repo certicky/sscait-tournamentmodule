@@ -44,6 +44,8 @@ public:
   virtual void moveCameraIsAttacking();
   virtual void moveCameraIsUnderAttack();
   virtual void moveCameraScoutWorker();
+  virtual void moveCameraFallingNuke();
+  virtual void moveCameraNukeDetect(BWAPI::Position target);
   virtual void moveCameraDrop();
   virtual void moveCameraArmy();
   virtual void moveCameraUnitCreated(BWAPI::Unit unit);
