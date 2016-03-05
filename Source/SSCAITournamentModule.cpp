@@ -121,6 +121,8 @@ int noKillsSecondsLimit = 300;
 int gameStartMaxSpeedTime = 90*16; // nr of frames with max speed in start of the game (16 frames/second)
 int noCombatSpeedUpTime = 10*60*16; // nr of frames to start speed up non-combat situations (10 in-game minutes)
 int noCombatSpeedUpDelay = 30*16; // nr of frames before speeding up game (30 in-game seconds)
+int noActionCrashLimit = 60*16; // nr of frames of inactivity before regarding as crash
+bool possibleInactivityCrash = true; // will be set to false if any unit moves within the time specified by noActionCrashLimit
 
 int screenWidth = 640;
 int screenHeight = 480;
@@ -191,7 +193,7 @@ void SSCAITournamentAI::onFrame()
 
 	camera.onFrame();
 
-	if (Broodwar->getFrameCount() % 360 == 0)
+	if (Broodwar->getFrameCount() % 360 == 0 && (!possibleInactivityCrash || Broodwar->getFrameCount() < noActionCrashLimit))
 	{
 		TournamentModuleState state = TournamentModuleState();
 		state.update(timerLimitsExceeded, Broodwar->getFrameCount());
@@ -209,6 +211,16 @@ void SSCAITournamentAI::onFrame()
 	{
 		Broodwar->sendText("Game time limit of %d frames reached, exiting", gameTimeLimit);
 		Broodwar->leaveGame();
+	}
+
+	if (possibleInactivityCrash)
+	{
+		// Checking for activity
+		for each (BWAPI::Unit* unit in Broodwar->self()->getUnits()) {
+			if (unit->getLastCommandFrame() > 0) {
+				possibleInactivityCrash = false;
+			}
+		}
 	}
 	
 	int frame = BWAPI::Broodwar->getFrameCount();
@@ -488,9 +500,10 @@ void SSCAITournamentAI::onUnitCreate(BWAPI::Unit* unit)
 void SSCAITournamentAI::onUnitDestroy(BWAPI::Unit* unit)
 {
 	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+
 	if (!(unit->getType().isMineralField() || unit->getType().isSpell() || unit->isHallucination()))
 	{
-		timeOfLastKill = killLimitTimer.getElapsedTimeInSec();
+		timeOfLastKill = (int)killLimitTimer.getElapsedTimeInSec();
 		nrFramesOfLastCombat = Broodwar->getFrameCount();
 	}
 	
