@@ -123,6 +123,7 @@ int noCombatSpeedUpTime = 10*60*16; // nr of frames to start speed up non-combat
 int noCombatSpeedUpDelay = 30*16; // nr of frames before speeding up game (30 in-game seconds)
 int noActionCrashLimit = 60*16; // nr of frames of inactivity before regarding as crash
 bool possibleInactivityCrash = true; // will be set to false if any unit moves within the time specified by noActionCrashLimit
+bool alreadyPrintedInactivityMsg = false; // used to only print message once
 
 int screenWidth = 640;
 int screenHeight = 480;
@@ -198,6 +199,11 @@ void SSCAITournamentAI::onFrame()
 		TournamentModuleState state = TournamentModuleState();
 		state.update(timerLimitsExceeded, Broodwar->getFrameCount());
 		state.write("gameState.txt", folder);
+	}
+	else if (Broodwar->getFrameCount() % 360 == 0 && Broodwar->getFrameCount() >= noActionCrashLimit && possibleInactivityCrash && !alreadyPrintedInactivityMsg)
+	{
+		Broodwar->sendText("No activity detected for the first in-game minute, exiting");
+		alreadyPrintedInactivityMsg = true;
 	}
 
 	if (killLimitTimer.getElapsedTimeInSec() - timeOfLastKill > noKillsSecondsLimit)
