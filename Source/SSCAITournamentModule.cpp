@@ -200,7 +200,7 @@ void SSCAITournamentAI::onFrame()
 		state.update(timerLimitsExceeded, Broodwar->getFrameCount());
 		state.write("gameState.txt", folder);
 	}
-	else if (Broodwar->getFrameCount() % 360 == 0 && Broodwar->getFrameCount() >= noActionCrashLimit && possibleInactivityCrash && !alreadyPrintedInactivityMsg)
+	else if (Broodwar->getFrameCount() >= noActionCrashLimit && possibleInactivityCrash && !alreadyPrintedInactivityMsg)
 	{
 		Broodwar->sendText("No activity detected for the first in-game minute, exiting");
 		alreadyPrintedInactivityMsg = true;
