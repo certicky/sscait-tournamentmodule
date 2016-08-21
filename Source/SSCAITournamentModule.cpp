@@ -552,17 +552,17 @@ bool SSCAITournamentModule::onAction(int actionType, void *parameter)
 				case Flag::UserInput:					return false;
 			}
 
-		case Tournament::PauseGame:
-		case Tournament::ResumeGame:
-		case Tournament::SetFrameSkip:
-		case Tournament::SetGUI:
+		case Tournament::PauseGame:						return false;
+		case Tournament::ResumeGame:					return false;
+		case Tournament::SetFrameSkip:					return false;
+		case Tournament::SetGUI:						return false;
 		case Tournament::SetLocalSpeed:					return false;
 		case Tournament::SetMap:						return false; 
-		case Tournament::LeaveGame:
-		case Tournament::SetLatCom:
-		case Tournament::SetTextSize:
-		case Tournament::SendText:
-		case Tournament::Printf:						
+		case Tournament::LeaveGame:						return false;
+		case Tournament::SetLatCom:						return true;
+		case Tournament::SetTextSize:					return false;
+		case Tournament::SendText:						return true;
+		case Tournament::Printf:						return false;
 		case Tournament::SetCommandOptimizationLevel:	return false; 
 							
 		default:										break;
