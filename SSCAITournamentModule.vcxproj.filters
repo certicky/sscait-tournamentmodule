@@ -29,9 +29,6 @@
     <ClInclude Include="Source\SSCAITournamentModule.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Timer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\CameraModule.h">
       <Filter>Header Files</Filter>
     </ClInclude>

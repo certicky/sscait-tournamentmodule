@@ -6,4 +6,8 @@ Debug/
 *.sdf
 *.suo
 
+.gitattributes
+.vs/
+UpgradeLog.htm
+
 cp_SSCAITournamentModule.bat
