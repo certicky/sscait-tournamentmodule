@@ -541,7 +541,7 @@ void SSCAITournamentAI::onSaveGame(std::string gameName)
 {
 }
 
-bool SSCAITournamentModule::onAction(int actionType, void *parameter)
+bool SSCAITournamentModule::onAction(BWAPI::Tournament::ActionID actionType, void *parameter)
 {
 	switch ( actionType )
 	{
