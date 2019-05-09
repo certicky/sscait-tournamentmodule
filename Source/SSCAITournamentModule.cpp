@@ -149,7 +149,7 @@ void SSCAITournamentAI::onStart()
 	folder = path.substr(0, path.find_last_of("/\\")); // removes \\StarCraft.exe
 
 	// Set the command optimization level (reduces high APM, size of bloated replays, etc)
-	Broodwar->setCommandOptimizationLevel(MINIMUM_COMMAND_OPTIMIZATION);
+	Broodwar->setCommandOptimizationLevel(DEFAULT_COMMAND_OPTIMIZATION);
 
 	timerLimits.push_back(55);
 	timerLimitsBound.push_back(320);
@@ -458,17 +458,12 @@ void SSCAITournamentAI::onSendText(std::string text)
 	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
 }
 
-void SSCAITournamentAI::onReceiveText(BWAPI::Player* player, std::string text)
+void SSCAITournamentAI::onReceiveText(BWAPI::Player player, std::string text)
 {
 	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
 }
 
-void SSCAITournamentAI::onPlayerLeft(BWAPI::Player* player)
-{
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
-}
-
-void SSCAITournamentAI::onPlayerDropped(BWAPI::Player* player)
+void SSCAITournamentAI::onPlayerLeft(BWAPI::Player player)
 {
 	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
 }
@@ -550,7 +545,10 @@ bool SSCAITournamentModule::onAction(BWAPI::Tournament::ActionID actionType, voi
 			{
 				case Flag::CompleteMapInformation:		return false;
 				case Flag::UserInput:					return false;
+				default:								break;
 			}
+			// If more flags are added, by default disallow unrecognized flags
+			return false;
 
 		case Tournament::PauseGame:						return false;
 		case Tournament::ResumeGame:					return false;
@@ -558,12 +556,13 @@ bool SSCAITournamentModule::onAction(BWAPI::Tournament::ActionID actionType, voi
 		case Tournament::SetGUI:						return false;
 		case Tournament::SetLocalSpeed:					return false;
 		case Tournament::SetMap:						return false; 
-		case Tournament::LeaveGame:						return false;
+		case Tournament::LeaveGame:						return true;
 		case Tournament::SetLatCom:						return true;
-		case Tournament::SetTextSize:					return false;
+		case Tournament::SetTextSize:					return true;
 		case Tournament::SendText:						return true;
-		case Tournament::Printf:						return false;
-		case Tournament::SetCommandOptimizationLevel:	return false; 
+		case Tournament::Printf:						return true;
+		case Tournament::SetCommandOptimizationLevel:
+			return *(int*)parameter >= MINIMUM_COMMAND_OPTIMIZATION;
 							
 		default:										break;
 	}
