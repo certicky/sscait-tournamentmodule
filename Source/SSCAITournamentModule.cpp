@@ -117,6 +117,8 @@ int localSpeed = targetLocalSpeed; // actual current game speed, gets overwritte
 int frameSkip = 0;
 int gameTimeLimit = 85714;
 int zeroSpeedTime = 85714;
+int oldFrameCount = -1;
+int numPrevEventsThisFrame = 0;
 int noKillsSecondsLimit = 300;
 int gameStartMaxSpeedTime = 90*16; // nr of frames with max speed in start of the game (16 frames/second)
 int noCombatSpeedUpTime = 10*60*16; // nr of frames to start speed up non-combat situations (10 in-game minutes)
@@ -131,6 +133,7 @@ int screenHeight = 480;
 bool drawBotNames = true;
 bool drawUnitInfo = false;
 bool drawTournamentInfo = true;
+bool eventTimesVaried = false;
 
 char buffer[MAX_PATH];
 std::string folder;
@@ -140,6 +143,47 @@ std::vector<int> frameTimes(100000,0);
 Timer killLimitTimer;
 int timeOfLastKill = 0;
 int nrFramesOfLastCombat = 0;
+
+void SSCAITournamentAI::updateFrameTimers()
+{
+	const int eventTime = BWAPI::Broodwar->getLastEventTime();
+	const int frameCount = BWAPI::Broodwar->getFrameCount();
+
+	// For a client bot, if the TM calls BWAPI v4.4.0's getLastEventTime() it
+	// returns the total time for all events for the current frame (not just
+	// for the last event), and it returns the same value regardless of which
+	// TM callback method (onUnitDiscover(), onFrame() etc) is calling
+	// getLastEventTime(). We don't want to count the same amount multiple
+	// times. So, we try to detect whether we should interpret the value as
+	// the total time for all events for that frame or just the time for the
+	// last event, by examining whether getLastEventTime() has ever returned
+	// different values during the same frame. For the frames before it is
+	// detected, we interpret it as meaning the total time for all events for
+	// that frame. Future versions of BWAPI might solve the problem for us,
+	// but for v4.4.0 at least, we use this workaround. BWAPI versions before
+	// v4.4.0 don't time client bots at all, so the workaround isn't needed
+	// in those versions.
+	if (frameCount != oldFrameCount)
+	{
+		frameTimes[frameCount] = eventTime;
+		numPrevEventsThisFrame = 1;
+		oldFrameCount = frameCount;
+	}
+	else
+	{
+		if (eventTimesVaried)
+		{
+			frameTimes[frameCount] += eventTime;
+		}
+		else if (eventTime != frameTimes[frameCount])
+		{
+			eventTimesVaried = true;
+			frameTimes[frameCount] = (frameTimes[frameCount] * numPrevEventsThisFrame) + eventTime;
+		}
+
+		++numPrevEventsThisFrame;
+	}
+}
 
 void SSCAITournamentAI::onStart()
 {
@@ -167,6 +211,8 @@ void SSCAITournamentAI::onStart()
 	Broodwar->setLocalSpeed(0); // starts game with max speed, switches to normal speed after some time
 	localSpeed = 0;
 	Broodwar->setFrameSkip(frameSkip);
+
+	updateFrameTimers();
 
 	myStartLocation = Position(Broodwar->self()->getStartLocation().x*TILE_SIZE, Broodwar->self()->getStartLocation().y*TILE_SIZE);
 	Broodwar->printf("Start position: %d %d", myStartLocation.x, myStartLocation.y);
@@ -238,7 +284,7 @@ void SSCAITournamentAI::onFrame()
 	}
 
 	// add the framer times for this frame
-	frameTimes[frame] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 
 	// the total time for the last frame
 	int timeElapsed = frameTimes[frame-1];
@@ -455,54 +501,54 @@ void SSCAITournamentAI::drawUnitInformation(int x, int y)
 
 void SSCAITournamentAI::onSendText(std::string text)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 }
 
 void SSCAITournamentAI::onReceiveText(BWAPI::Player player, std::string text)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 }
 
 void SSCAITournamentAI::onPlayerLeft(BWAPI::Player player)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 }
 
 void SSCAITournamentAI::onNukeDetect(BWAPI::Position target)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 
 	camera.moveCameraNukeDetect(target);
 }
 
 void SSCAITournamentAI::onUnitDiscover(BWAPI::Unit unit)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 }
 
 void SSCAITournamentAI::onUnitEvade(BWAPI::Unit unit)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 }
 
 void SSCAITournamentAI::onUnitShow(BWAPI::Unit unit)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 }
 
 void SSCAITournamentAI::onUnitHide(BWAPI::Unit unit)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 }
 
 void SSCAITournamentAI::onUnitCreate(BWAPI::Unit unit)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 }
 
 void SSCAITournamentAI::onUnitDestroy(BWAPI::Unit unit)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 	if (!(unit->getType().isMineralField() || unit->getType().isSpell() || unit->isHallucination()))
 	{
 		timeOfLastKill = (int)killLimitTimer.getElapsedTimeInSec();
@@ -518,22 +564,24 @@ void SSCAITournamentAI::onUnitDestroy(BWAPI::Unit unit)
 
 void SSCAITournamentAI::onUnitMorph(BWAPI::Unit unit)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 }
 
 void SSCAITournamentAI::onUnitComplete(BWAPI::Unit unit)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 	
 	camera.moveCameraUnitCreated(unit);
 }
 
 void SSCAITournamentAI::onUnitRenegade(BWAPI::Unit unit)
 {
+	updateFrameTimers();
 }
 
 void SSCAITournamentAI::onSaveGame(std::string gameName)
 {
+	updateFrameTimers();
 }
 
 bool SSCAITournamentModule::onAction(BWAPI::Tournament::ActionID actionType, void *parameter)

@@ -45,6 +45,7 @@ public:
   virtual void onUnitRenegade(BWAPI::Unit unit) override;
   virtual void onSaveGame(std::string gameName) override;
   virtual void onUnitComplete(BWAPI::Unit unit) override;
+  virtual void updateFrameTimers();
   virtual void drawUnitInformation(int x, int y);
   virtual void drawTournamentModuleSettings();
   virtual void parseConfigFile(const std::string & filename);
