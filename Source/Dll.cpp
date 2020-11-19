@@ -6,28 +6,20 @@
 #include <BWAPI.h>
 
 #include "SSCAITournamentModule.h"
-namespace BWAPI { Game* Broodwar; }
-BOOL APIENTRY DllMain( HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved )
+
+extern "C" __declspec(dllexport) void gameInit(BWAPI::Game* game) { BWAPI::BroodwarPtr = game; }
+
+BOOL APIENTRY DllMain(HANDLE, DWORD, LPVOID)
 {
-  switch ( ul_reason_for_call )
-  {
-  case DLL_PROCESS_ATTACH:
-    BWAPI::BWAPI_init();
-    break;
-  case DLL_PROCESS_DETACH:
-    break;
-  }
-  
-return TRUE;
+	return TRUE;
 }
 
- extern "C" __declspec(dllexport) BWAPI::AIModule* newTournamentAI(BWAPI::Game* game)
+extern "C" __declspec(dllexport) BWAPI::AIModule* newTournamentAI()
 {
-  BWAPI::Broodwar = game;
-  return new SSCAITournamentAI();
+	return new SSCAITournamentAI();
 }
 
  extern "C" __declspec(dllexport) BWAPI::TournamentModule* newTournamentModule()
-{
+ {
 	 return new SSCAITournamentModule();
-}
+ }

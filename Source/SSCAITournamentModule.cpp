@@ -117,10 +117,15 @@ int localSpeed = targetLocalSpeed; // actual current game speed, gets overwritte
 int frameSkip = 0;
 int gameTimeLimit = 85714;
 int zeroSpeedTime = 85714;
+int oldFrameCount = -1;
+int numPrevEventsThisFrame = 0;
 int noKillsSecondsLimit = 300;
 int gameStartMaxSpeedTime = 90*16; // nr of frames with max speed in start of the game (16 frames/second)
 int noCombatSpeedUpTime = 10*60*16; // nr of frames to start speed up non-combat situations (10 in-game minutes)
 int noCombatSpeedUpDelay = 30*16; // nr of frames before speeding up game (30 in-game seconds)
+int noActionCrashLimit = 60 * 16; // nr of frames of inactivity before regarding as crash
+bool possibleInactivityCrash = true; // will be set to false if any unit moves within the time specified by noActionCrashLimit
+bool alreadyPrintedInactivityMsg = false; // used to only print message once
 
 int screenWidth = 640;
 int screenHeight = 480;
@@ -128,6 +133,7 @@ int screenHeight = 480;
 bool drawBotNames = true;
 bool drawUnitInfo = false;
 bool drawTournamentInfo = true;
+bool eventTimesVaried = false;
 
 char buffer[MAX_PATH];
 std::string folder;
@@ -138,6 +144,47 @@ Timer killLimitTimer;
 int timeOfLastKill = 0;
 int nrFramesOfLastCombat = 0;
 
+void SSCAITournamentAI::updateFrameTimers()
+{
+	const int eventTime = BWAPI::Broodwar->getLastEventTime();
+	const int frameCount = BWAPI::Broodwar->getFrameCount();
+
+	// For a client bot, if the TM calls BWAPI v4.4.0's getLastEventTime() it
+	// returns the total time for all events for the current frame (not just
+	// for the last event), and it returns the same value regardless of which
+	// TM callback method (onUnitDiscover(), onFrame() etc) is calling
+	// getLastEventTime(). We don't want to count the same amount multiple
+	// times. So, we try to detect whether we should interpret the value as
+	// the total time for all events for that frame or just the time for the
+	// last event, by examining whether getLastEventTime() has ever returned
+	// different values during the same frame. For the frames before it is
+	// detected, we interpret it as meaning the total time for all events for
+	// that frame. Future versions of BWAPI might solve the problem for us,
+	// but for v4.4.0 at least, we use this workaround. BWAPI versions before
+	// v4.4.0 don't time client bots at all, so the workaround isn't needed
+	// in those versions.
+	if (frameCount != oldFrameCount)
+	{
+		frameTimes[frameCount] = eventTime;
+		numPrevEventsThisFrame = 1;
+		oldFrameCount = frameCount;
+	}
+	else
+	{
+		if (eventTimesVaried)
+		{
+			frameTimes[frameCount] += eventTime;
+		}
+		else if (eventTime != frameTimes[frameCount])
+		{
+			eventTimesVaried = true;
+			frameTimes[frameCount] = (frameTimes[frameCount] * numPrevEventsThisFrame) + eventTime;
+		}
+
+		++numPrevEventsThisFrame;
+	}
+}
+
 void SSCAITournamentAI::onStart()
 {
 	GetModuleFileName(NULL, buffer, MAX_PATH);
@@ -146,7 +193,7 @@ void SSCAITournamentAI::onStart()
 	folder = path.substr(0, path.find_last_of("/\\")); // removes \\StarCraft.exe
 
 	// Set the command optimization level (reduces high APM, size of bloated replays, etc)
-	Broodwar->setCommandOptimizationLevel(MINIMUM_COMMAND_OPTIMIZATION);
+	Broodwar->setCommandOptimizationLevel(DEFAULT_COMMAND_OPTIMIZATION);
 
 	timerLimits.push_back(55);
 	timerLimitsBound.push_back(320);
@@ -165,8 +212,10 @@ void SSCAITournamentAI::onStart()
 	localSpeed = 0;
 	Broodwar->setFrameSkip(frameSkip);
 
-	myStartLocation = Position(Broodwar->self()->getStartLocation().x()*TILE_SIZE, Broodwar->self()->getStartLocation().y()*TILE_SIZE);
-	Broodwar->printf("Start position: %d %d", myStartLocation.x(), myStartLocation.y());
+	updateFrameTimers();
+
+	myStartLocation = Position(Broodwar->self()->getStartLocation().x*TILE_SIZE, Broodwar->self()->getStartLocation().y*TILE_SIZE);
+	Broodwar->printf("Start position: %d %d", myStartLocation.x, myStartLocation.y);
 
 	camera.onStart(myStartLocation, screenWidth, screenHeight);
 	killLimitTimer.start();
@@ -191,11 +240,16 @@ void SSCAITournamentAI::onFrame()
 
 	camera.onFrame();
 
-	if (Broodwar->getFrameCount() % 360 == 0)
+	if (Broodwar->getFrameCount() % 360 == 0 && (!possibleInactivityCrash || Broodwar->getFrameCount() < noActionCrashLimit))
 	{
 		TournamentModuleState state = TournamentModuleState();
 		state.update(timerLimitsExceeded, Broodwar->getFrameCount());
 		state.write("gameState.txt", folder);
+	}
+	else if (Broodwar->getFrameCount() >= noActionCrashLimit && possibleInactivityCrash && !alreadyPrintedInactivityMsg)
+	{
+		Broodwar->sendText("No activity detected for the first in-game minute, exiting");
+		alreadyPrintedInactivityMsg = true;
 	}
 
 	if (killLimitTimer.getElapsedTimeInSec() - timeOfLastKill > noKillsSecondsLimit)
@@ -210,6 +264,16 @@ void SSCAITournamentAI::onFrame()
 		Broodwar->sendText("Game time limit of %d frames reached, exiting", gameTimeLimit);
 		Broodwar->leaveGame();
 	}
+
+	if (possibleInactivityCrash)
+	{
+		// Checking for activity
+		for each (BWAPI::Unit unit in Broodwar->self()->getUnits()) {
+			if (unit->getLastCommandFrame() > 0) {
+				possibleInactivityCrash = false;
+			}
+		}
+	}
 	
 	int frame = BWAPI::Broodwar->getFrameCount();
 	// check the sum of the times for the previous frame
@@ -220,7 +284,7 @@ void SSCAITournamentAI::onFrame()
 	}
 
 	// add the framer times for this frame
-	frameTimes[frame] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 
 	// the total time for the last frame
 	int timeElapsed = frameTimes[frame-1];
@@ -266,10 +330,10 @@ void SSCAITournamentAI::onFrame()
 			//Check if any of our units are close to enemies, if so, make sure not zero speed
 			int radius = 150;
 			bool unitCloseEnough = false;
-			for each (BWAPI::Unit* unit1 in Broodwar->enemy()->getUnits())
+			for each (BWAPI::Unit unit1 in Broodwar->enemy()->getUnits())
 			{
 				BWAPI::Position uPos = unit1->getPosition();
-				for each (BWAPI::Unit* unit2 in BWAPI::Broodwar->getUnitsInRadius(uPos, radius))
+				for each (BWAPI::Unit unit2 in BWAPI::Broodwar->getUnitsInRadius(uPos, radius))
 				{
 					if (unit2->getPlayer() == Broodwar->self())
 					{
@@ -303,13 +367,15 @@ void SSCAITournamentAI::drawTournamentModuleSettings()
 	bool largeScreen = screenWidth > 800 && screenHeight > 600;
 	int hudOffset = 190;
 	int nrTextRows = 5;
-	int textSize = 1;
+	BWAPI::Text::Size::Enum textSize = BWAPI::Text::Size::Default;
+	BWAPI::Text::Size::Enum textSizeLarger = BWAPI::Text::Size::Large;
 	int rowDistance = 10;
 	int width = 120;
 	int rightSideInset = 220;
 	if (largeScreen)
 	{
-		textSize = 2;
+		textSize = BWAPI::Text::Size::Large;
+		textSizeLarger = BWAPI::Text::Size::Huge;
 		rowDistance = 15;
 		width = 180;
 		rightSideInset = 300;
@@ -359,7 +425,7 @@ void SSCAITournamentAI::drawTournamentModuleSettings()
 		drawX = screenWidth - rightSideInset;
 		drawY = y;
 
-		BWAPI::Broodwar->setTextSize(textSize+1);
+		BWAPI::Broodwar->setTextSize(textSizeLarger);
 		Broodwar->drawTextScreen(drawX, drawY, "\x03%s", BWAPI::Broodwar->mapFileName().c_str());
 		BWAPI::Broodwar->setTextSize(textSize);
 
@@ -382,7 +448,7 @@ void SSCAITournamentAI::drawTournamentModuleSettings()
 		Broodwar->drawBoxScreen(boxX, rowY, boxX + boxSize, rowY + boxSize, Colors::Green, true);
 		Broodwar->drawBoxScreen(boxX + 1, rowY + 1, boxX + boxSize-1, rowY + boxSize-1, Broodwar->self()->getColor(), true);
 
-		BWAPI::Broodwar->setTextSize(textSize+1);
+		BWAPI::Broodwar->setTextSize(textSizeLarger);
 		Broodwar->drawTextScreen(boxX + 25, rowY - 1, "\x07%s (%c)", BWAPI::Broodwar->self()->getName().c_str(), Broodwar->self()->getRace().getName().c_str()[0]);
 
 		rowY = rowY + 30;
@@ -390,7 +456,7 @@ void SSCAITournamentAI::drawTournamentModuleSettings()
 		Broodwar->drawBoxScreen(boxX, rowY, boxX + boxSize, rowY + boxSize, Colors::Green, true);
 		Broodwar->drawBoxScreen(boxX + 1, rowY + 1, boxX + boxSize-1, rowY + boxSize-1, Broodwar->enemy()->getColor(), true);
 
-		BWAPI::Broodwar->setTextSize(textSize+1);
+		BWAPI::Broodwar->setTextSize(textSizeLarger);
 		Broodwar->drawTextScreen(boxX + 25, rowY - 1, "\x07%s (%c)", BWAPI::Broodwar->enemy()->getName().c_str(), Broodwar->enemy()->getRace().getName().c_str()[0]);
 	}	
 
@@ -435,60 +501,57 @@ void SSCAITournamentAI::drawUnitInformation(int x, int y)
 
 void SSCAITournamentAI::onSendText(std::string text)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 }
 
-void SSCAITournamentAI::onReceiveText(BWAPI::Player* player, std::string text)
+void SSCAITournamentAI::onReceiveText(BWAPI::Player player, std::string text)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 }
 
-void SSCAITournamentAI::onPlayerLeft(BWAPI::Player* player)
+void SSCAITournamentAI::onPlayerLeft(BWAPI::Player player)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
-}
-
-void SSCAITournamentAI::onPlayerDropped(BWAPI::Player* player)
-{
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 }
 
 void SSCAITournamentAI::onNukeDetect(BWAPI::Position target)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
+
+	camera.moveCameraNukeDetect(target);
 }
 
-void SSCAITournamentAI::onUnitDiscover(BWAPI::Unit* unit)
+void SSCAITournamentAI::onUnitDiscover(BWAPI::Unit unit)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 }
 
-void SSCAITournamentAI::onUnitEvade(BWAPI::Unit* unit)
+void SSCAITournamentAI::onUnitEvade(BWAPI::Unit unit)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 }
 
-void SSCAITournamentAI::onUnitShow(BWAPI::Unit* unit)
+void SSCAITournamentAI::onUnitShow(BWAPI::Unit unit)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 }
 
-void SSCAITournamentAI::onUnitHide(BWAPI::Unit* unit)
+void SSCAITournamentAI::onUnitHide(BWAPI::Unit unit)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 }
 
-void SSCAITournamentAI::onUnitCreate(BWAPI::Unit* unit)
+void SSCAITournamentAI::onUnitCreate(BWAPI::Unit unit)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 }
 
-void SSCAITournamentAI::onUnitDestroy(BWAPI::Unit* unit)
+void SSCAITournamentAI::onUnitDestroy(BWAPI::Unit unit)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 	if (!(unit->getType().isMineralField() || unit->getType().isSpell() || unit->isHallucination()))
 	{
-		timeOfLastKill = killLimitTimer.getElapsedTimeInSec();
+		timeOfLastKill = (int)killLimitTimer.getElapsedTimeInSec();
 		nrFramesOfLastCombat = Broodwar->getFrameCount();
 	}
 	
@@ -499,27 +562,29 @@ void SSCAITournamentAI::onUnitDestroy(BWAPI::Unit* unit)
 	}
 }
 
-void SSCAITournamentAI::onUnitMorph(BWAPI::Unit* unit)
+void SSCAITournamentAI::onUnitMorph(BWAPI::Unit unit)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 }
 
-void SSCAITournamentAI::onUnitComplete(BWAPI::Unit *unit)
+void SSCAITournamentAI::onUnitComplete(BWAPI::Unit unit)
 {
-	frameTimes[BWAPI::Broodwar->getFrameCount()] += BWAPI::Broodwar->getLastEventTime();
+	updateFrameTimers();
 	
 	camera.moveCameraUnitCreated(unit);
 }
 
-void SSCAITournamentAI::onUnitRenegade(BWAPI::Unit* unit)
+void SSCAITournamentAI::onUnitRenegade(BWAPI::Unit unit)
 {
+	updateFrameTimers();
 }
 
 void SSCAITournamentAI::onSaveGame(std::string gameName)
 {
+	updateFrameTimers();
 }
 
-bool SSCAITournamentModule::onAction(int actionType, void *parameter)
+bool SSCAITournamentModule::onAction(BWAPI::Tournament::ActionID actionType, void *parameter)
 {
 	switch ( actionType )
 	{
@@ -528,22 +593,24 @@ bool SSCAITournamentModule::onAction(int actionType, void *parameter)
 			{
 				case Flag::CompleteMapInformation:		return false;
 				case Flag::UserInput:					return false;
+				default:								break;
 			}
+			// If more flags are added, by default disallow unrecognized flags
+			return false;
 
-		case Tournament::PauseGame:
-		case Tournament::RestartGame:
-		case Tournament::ResumeGame:
-		case Tournament::SetFrameSkip:
-		case Tournament::SetGUI:
+		case Tournament::PauseGame:						return false;
+		case Tournament::ResumeGame:					return false;
+		case Tournament::SetFrameSkip:					return false;
+		case Tournament::SetGUI:						return false;
 		case Tournament::SetLocalSpeed:					return false;
 		case Tournament::SetMap:						return false; 
-		case Tournament::LeaveGame:
-		case Tournament::ChangeRace:
-		case Tournament::SetLatCom:
-		case Tournament::SetTextSize:
-		case Tournament::SendText:
-		case Tournament::Printf:						
-		case Tournament::SetCommandOptimizationLevel:	return false; 
+		case Tournament::LeaveGame:						return true;
+		case Tournament::SetLatCom:						return true;
+		case Tournament::SetTextSize:					return true;
+		case Tournament::SendText:						return true;
+		case Tournament::Printf:						return true;
+		case Tournament::SetCommandOptimizationLevel:
+			return *(int*)parameter >= MINIMUM_COMMAND_OPTIMIZATION;
 							
 		default:										break;
 	}
