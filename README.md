@@ -1,3 +1,5 @@
+### SSCAIT Tournament Module DLL
+
 Read the file 'local_files_example/README.txt' for instructions of post-compile copying of the .dll file, and using the SSCAI tournament settings.
 
 The bwapi dependencies must be linked via:
