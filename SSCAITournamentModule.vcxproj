@@ -57,6 +57,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>cp_SSCAITournamentModule.bat</Command>
@@ -64,11 +66,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\CameraModule.cpp" />
+    <ClCompile Include="Source\CommentaryModule.cpp" />
     <ClCompile Include="Source\Dll.cpp" />
     <ClCompile Include="Source\SSCAITournamentModule.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\CameraModule.h" />
+    <ClInclude Include="Source\CommentaryModule.h" />
     <ClInclude Include="Source\SSCAITournamentModule.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

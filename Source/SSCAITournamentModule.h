@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <sstream>
 #include "CameraModule.h"
+#include "CommentaryModule.h"
 
 #define DEFAULT_COMMAND_OPTIMIZATION 1
 #define MINIMUM_COMMAND_OPTIMIZATION 0
@@ -25,6 +26,7 @@ class SSCAITournamentAI : public BWAPI::AIModule
 {
 private:
   CameraModule camera;
+  CommentaryModule commentary;
   BWAPI::Position myStartLocation;
 
 public:
@@ -48,6 +50,7 @@ public:
   virtual void updateFrameTimers();
   virtual void drawUnitInformation(int x, int y);
   virtual void drawTournamentModuleSettings();
-  virtual void parseConfigFile(const std::string & filename);
+  virtual void parseTMConfigFile(const std::string & filename);
+  virtual void parseCommentaryConfigFile(const std::string & filename);
   virtual std::vector<std::string> getLines(const std::string & filename);
 };

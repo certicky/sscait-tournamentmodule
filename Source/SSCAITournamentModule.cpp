@@ -134,6 +134,8 @@ bool drawBotNames = true;
 bool drawUnitInfo = false;
 bool drawTournamentInfo = true;
 bool eventTimesVaried = false;
+bool enableCommentary = false;
+std::string commentaryGeneratorURL = "";
 
 char buffer[MAX_PATH];
 std::string folder;
@@ -204,10 +206,10 @@ void SSCAITournamentAI::onStart()
 	timerLimitsExceeded.push_back(0);
 	timerLimitsExceeded.push_back(0);
 	timerLimitsExceeded.push_back(0);
-	
+
 	camera = CameraModule();
-	parseConfigFile("bwapi-data\\tm_settings.ini");
-	
+	parseTMConfigFile("bwapi-data\\tm_settings.ini");
+
 	Broodwar->setLocalSpeed(0); // starts game with max speed, switches to normal speed after some time
 	localSpeed = 0;
 	Broodwar->setFrameSkip(frameSkip);
@@ -219,6 +221,16 @@ void SSCAITournamentAI::onStart()
 
 	camera.onStart(myStartLocation, screenWidth, screenHeight);
 	killLimitTimer.start();
+
+	const std::string& name = "commentary_settings.ini";
+	if (FILE *file = fopen(name.c_str(), "r")) {
+		fclose(file);
+		parseCommentaryConfigFile(name);
+	}
+	if (enableCommentary) {
+		commentary = CommentaryModule();
+		commentary.onStart(commentaryGeneratorURL);
+	}
 }
 
 
@@ -359,6 +371,10 @@ void SSCAITournamentAI::onFrame()
 			Broodwar->setLocalSpeed(targetLocalSpeed);
 			localSpeed = targetLocalSpeed;
 		}
+	}
+
+	if (Broodwar->getFrameCount() % 50 == 0) {
+		if (enableCommentary) commentary.speak();
 	}
 }
 
@@ -502,11 +518,13 @@ void SSCAITournamentAI::drawUnitInformation(int x, int y)
 void SSCAITournamentAI::onSendText(std::string text)
 {
 	updateFrameTimers();
+	if (enableCommentary) commentary.onSendText(text);
 }
 
 void SSCAITournamentAI::onReceiveText(BWAPI::Player player, std::string text)
 {
 	updateFrameTimers();
+	if (enableCommentary) commentary.onReceiveText(player, text);
 }
 
 void SSCAITournamentAI::onPlayerLeft(BWAPI::Player player)
@@ -534,6 +552,7 @@ void SSCAITournamentAI::onUnitEvade(BWAPI::Unit unit)
 void SSCAITournamentAI::onUnitShow(BWAPI::Unit unit)
 {
 	updateFrameTimers();
+	if (enableCommentary) commentary.onUnitShow(unit);
 }
 
 void SSCAITournamentAI::onUnitHide(BWAPI::Unit unit)
@@ -560,6 +579,7 @@ void SSCAITournamentAI::onUnitDestroy(BWAPI::Unit unit)
 		Broodwar->setLocalSpeed(targetLocalSpeed);
 		localSpeed = targetLocalSpeed;
 	}
+	if (enableCommentary) commentary.onUnitDestroy(unit);
 }
 
 void SSCAITournamentAI::onUnitMorph(BWAPI::Unit unit)
@@ -656,7 +676,7 @@ std::vector<std::string> SSCAITournamentAI::getLines(const std::string & filenam
     return lines;
 }
 
-void SSCAITournamentAI::parseConfigFile(const std::string & filename)
+void SSCAITournamentAI::parseTMConfigFile(const std::string & filename)
 {
     std::vector<std::string> lines(getLines(filename));
 
@@ -772,4 +792,31 @@ void SSCAITournamentAI::parseConfigFile(const std::string & filename)
 			BWAPI::Broodwar->printf("Invalid Option in Tournament Module Settings: %s", option.c_str());
 		}
     }
+}
+
+void SSCAITournamentAI::parseCommentaryConfigFile(const std::string & filename)
+{
+	std::vector<std::string> lines(getLines(filename));
+
+	for (size_t l(0); l < lines.size(); ++l)
+	{
+		std::istringstream iss(lines[l]);
+		std::string option;
+		iss >> option;
+
+		if (strcmp(option.c_str(), "EnableCommentary") == 0)
+		{
+			std::string val;
+			iss >> val;
+
+			if (strcmp(val.c_str(), "1") == 0 || strcmp(val.c_str(), "true") == 0)
+			{
+				enableCommentary = true;
+			}
+		}
+		else if (strcmp(option.c_str(), "CommentaryGeneratorURL") == 0)
+		{
+			iss >> commentaryGeneratorURL;
+		}
+	}
 }
